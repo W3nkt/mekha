@@ -1,0 +1,38 @@
+{
+  "app": {
+    "name": "KhaiDee",
+    "tagline": "A simpler, more trusted way to run your online shop"
+  },
+  "common": {
+    "language": "Language",
+    "comingSoon": "Coming soon",
+    "backHome": "Back home"
+  },
+  "home": {
+    "greeting": "Welcome",
+    "headline": "Build a shop customers trust",
+    "description": "Orders, products, delivery, and seller trust in one place.",
+    "primaryAction": "Set up my shop",
+    "today": "Today",
+    "emptyTitle": "Ready for your first order",
+    "emptyDescription": "Add a product and share your seller profile to get started."
+  },
+  "nav": {
+    "orders": "Orders",
+    "products": "Products",
+    "finance": "Finance",
+    "trust": "Trust",
+    "settings": "Settings"
+  },
+  "auth": {
+    "title": "Sign in to your shop",
+    "description": "Use a Lao phone number to receive an OTP",
+    "phonePlaceholder": "20 XX XXX XXX",
+    "continue": "Get OTP code",
+    "country": "Laos +856"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "This link may have moved or no longer exists."
+  }
+}
