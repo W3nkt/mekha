@@ -26,6 +26,8 @@ Copy `.env.example` to `.env.local` and fill in values for hosted integrations. 
 
 Values requiring repository-owner access are tracked in `.setup-inputs.example`. Copy it to `.setup-inputs.local`, fill it in, and add the corresponding values to GitHub Actions secrets. The local input file is ignored by Git.
 
+The expected `main` branch policy is versioned in `.github/branch-protection.json` so repository protection can be audited and reapplied consistently.
+
 ## Commands
 
 - `pnpm build` builds every workspace in dependency order.
