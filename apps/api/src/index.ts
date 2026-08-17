@@ -1,4 +1,44 @@
-import type { SellerId } from "@mekha/types";
-import { identity } from "@mekha/utils";
+import { Hono } from "hono";
+import { prettyJSON } from "hono/pretty-json";
 
-export const exampleSellerId = identity<SellerId>("seller-placeholder");
+import { apiError } from "./lib/errors";
+import { structuredLogger } from "./lib/logger";
+import { corsMiddleware } from "./middleware/cors";
+import { publicRateLimit } from "./middleware/rateLimit";
+import { adminRoute } from "./routes/admin";
+import { healthRoute } from "./routes/health";
+import { ordersRoute } from "./routes/orders";
+import { sellersRoute } from "./routes/sellers";
+import { trustRoute } from "./routes/trust";
+import type { ApiEnv } from "./types";
+
+const app = new Hono<ApiEnv>();
+
+app.use("*", corsMiddleware);
+app.use("*", structuredLogger);
+app.use("*", prettyJSON());
+
+app.route("/v1/health", healthRoute);
+app.use("/v1/sellers/*", publicRateLimit);
+app.use("/v1/trust/*", publicRateLimit);
+app.route("/v1/sellers", sellersRoute);
+app.route("/v1/orders", ordersRoute);
+app.route("/v1/trust", trustRoute);
+app.route("/v1/admin", adminRoute);
+
+app.notFound((c) => apiError(c, 404, "NOT_FOUND", "Route not found"));
+
+app.onError((error, c) => {
+  console.error(
+    JSON.stringify({
+      level: "error",
+      event: "unhandled_error",
+      requestId: c.get("requestId"),
+      message: error.message,
+    }),
+  );
+
+  return apiError(c, 500, "INTERNAL_ERROR", "Internal server error");
+});
+
+export default app;
