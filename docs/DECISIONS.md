@@ -10,6 +10,8 @@ Singapore is the nearest supported Supabase region to Laos and keeps platform da
 
 The production project must not be created in another region. Changing regions requires creating a new Supabase project and migrating the data.
 
+Development currently uses the linked hosted project. Docker-based local Supabase remains optional. All hosted migrations must be reviewed with a dry run before they are applied, and production data must never be reset from development tooling.
+
 ## ADR-002: Phone-only authentication
 
 - Status: Accepted
