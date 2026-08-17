@@ -63,7 +63,7 @@
       "name": "mekha-api",
       "vars": {
         "ENVIRONMENT": "production",
-        "ALLOWED_ORIGIN": "https://mekha.app",
+        "ALLOWED_ORIGIN": "https://mekha.satsx.net",
         "SUPABASE_URL": "https://mjgcivpsboccmstphyox.supabase.co",
       },
       "ratelimits": [
