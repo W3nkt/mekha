@@ -17,6 +17,8 @@ pnpm dev
 
 The `dev` command starts the web, API, and admin placeholders concurrently. Replace each placeholder with its framework scaffold in the corresponding follow-up issue.
 
+Copy `.env.example` to `.env.local` and fill in values for local integrations. Never commit the resulting file.
+
 ## Commands
 
 - `pnpm build` builds every workspace in dependency order.
@@ -24,6 +26,10 @@ The `dev` command starts the web, API, and admin placeholders concurrently. Repl
 - `pnpm lint` runs workspace lint checks.
 - `pnpm type-check` checks TypeScript across the monorepo.
 - `pnpm format` formats TypeScript, Markdown, and JSON files.
+- `pnpm db:start` starts the local Supabase stack (Docker Desktop required).
+- `pnpm db:status` reports local Supabase service health.
+- `pnpm db:reset` rebuilds the local database from migrations and seed data.
+- `pnpm db:types` regenerates shared database types from the local database.
 
 ## Structure
 

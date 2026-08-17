@@ -1,0 +1,1 @@
+-- Seed data is added by feature-specific migrations.
