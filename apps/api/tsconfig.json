@@ -1,4 +1,4 @@
 {
   "extends": "../../packages/typescript-config/cloudflare.json",
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "worker-configuration.d.ts"]
 }

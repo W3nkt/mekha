@@ -5,6 +5,9 @@ dist/
 !.env.example
 *.local
 .wrangler/
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
 .corepack/
 coverage/
 *.tsbuildinfo

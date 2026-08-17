@@ -3,14 +3,26 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "node ../../scripts/build-placeholder.mjs",
-    "dev": "node ../../scripts/dev-placeholder.mjs",
-    "test": "node --test",
+    "build": "wrangler deploy --dry-run --env production --outdir dist",
+    "dev": "wrangler dev --local --port 8787",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "wrangler deploy --env production",
+    "cf-typegen": "wrangler types",
+    "test": "vitest run",
     "lint": "tsc --noEmit",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@mekha/types": "workspace:*",
-    "@mekha/utils": "workspace:*"
+    "@mekha/utils": "workspace:*",
+    "@supabase/supabase-js": "^2.112.3",
+    "hono": "^4.13.2",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "typescript": "^5.9.2",
+    "vitest": "^4.1.10",
+    "wrangler": "^4.123.0"
   }
 }
