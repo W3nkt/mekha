@@ -11,3 +11,4 @@ dist/
 .corepack/
 coverage/
 *.tsbuildinfo
+.setup-inputs.local

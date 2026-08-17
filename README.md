@@ -1,5 +1,10 @@
 # Mekha
 
+[![CI](https://github.com/W3nkt/mekha/actions/workflows/ci.yml/badge.svg)](https://github.com/W3nkt/mekha/actions/workflows/ci.yml)
+[![Deploy Web](https://github.com/W3nkt/mekha/actions/workflows/deploy-web.yml/badge.svg)](https://github.com/W3nkt/mekha/actions/workflows/deploy-web.yml)
+[![Deploy API](https://github.com/W3nkt/mekha/actions/workflows/deploy-api.yml/badge.svg)](https://github.com/W3nkt/mekha/actions/workflows/deploy-api.yml)
+[![Database Migrations](https://github.com/W3nkt/mekha/actions/workflows/db-migrate.yml/badge.svg)](https://github.com/W3nkt/mekha/actions/workflows/db-migrate.yml)
+
 Mekha is the internal monorepo for KhaiDee (seller OS) and LaoTrust (trust layer).
 
 ## Requirements
@@ -18,6 +23,8 @@ pnpm dev
 The `dev` command starts the web, API, and admin placeholders concurrently. Replace each placeholder with its framework scaffold in the corresponding follow-up issue.
 
 Copy `.env.example` to `.env.local` and fill in values for hosted integrations. Never commit the resulting file. This repository is linked to the hosted Mekha Supabase project in Singapore.
+
+Values requiring repository-owner access are tracked in `.setup-inputs.example`. Copy it to `.setup-inputs.local`, fill it in, and add the corresponding values to GitHub Actions secrets. The local input file is ignored by Git.
 
 ## Commands
 
