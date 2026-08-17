@@ -9,7 +9,7 @@ Mekha is the internal monorepo for KhaiDee (seller OS) and LaoTrust (trust layer
 
 ## Requirements
 
-- Node.js 20 or newer
+- Node.js 22 or newer
 - pnpm 9 or newer (Corepack recommended)
 
 ## Local development
