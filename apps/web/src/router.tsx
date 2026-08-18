@@ -13,6 +13,7 @@ import {
   RegisterVerifyPage,
 } from "./pages/register";
 import { SellerVerificationPage } from "./pages/seller-verification";
+import { AdminVerificationsPage } from "./pages/admin-verifications";
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
       { path: "/register/verify", element: <RegisterVerifyPage /> },
       { path: "/register/profile", element: <RegisterProfilePage /> },
       { path: "/seller/verify", element: <SellerVerificationPage /> },
+      { path: "/admin/verifications", element: <AdminVerificationsPage /> },
       {
         path: "/register/verification",
         element: <ComingSoonPage section="verification" />,

@@ -5,6 +5,7 @@ import type { ApiEnv } from "../types";
 
 export type ErrorCode =
   | "BAD_REQUEST"
+  | "CONFLICT"
   | "FORBIDDEN"
   | "INTERNAL_ERROR"
   | "INVALID_TOKEN"
