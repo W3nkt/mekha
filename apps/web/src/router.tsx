@@ -2,7 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 
 import App from "./App";
 import { ComingSoonPage } from "./pages/coming-soon";
-import { HomePage } from "./pages/index";
+import { SellerSearchPage } from "./pages/search";
 import { LoginPage } from "./pages/login";
 import { ComponentsPage } from "./pages/dev-components";
 import { NotFoundPage } from "./pages/404";
@@ -11,7 +11,8 @@ export const router = createBrowserRouter([
   {
     element: <App />,
     children: [
-      { path: "/", element: <HomePage /> },
+      { path: "/", element: <SellerSearchPage /> },
+      { path: "/search", element: <SellerSearchPage /> },
       { path: "/login", element: <LoginPage /> },
       { path: "/dev/components", element: <ComponentsPage /> },
       { path: "/orders", element: <ComingSoonPage section="orders" /> },

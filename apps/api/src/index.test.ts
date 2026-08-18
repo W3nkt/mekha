@@ -79,6 +79,19 @@ describe("Mekha API", () => {
     });
   });
 
+  it("validates public seller search parameters", async () => {
+    const response = await request(
+      "/v1/sellers/search?q=&type=unknown",
+      createEnv(),
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "BAD_REQUEST",
+      error: "Invalid seller search",
+    });
+  });
+
   it("rejects an invalid Supabase access token", async () => {
     vi.stubGlobal(
       "fetch",

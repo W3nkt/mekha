@@ -19,7 +19,25 @@ export const UpdateSellerSchema = CreateSellerSchema.omit({
 export type UpdateSeller = z.infer<typeof UpdateSellerSchema>;
 
 export const SellerSearchSchema = z.object({
-  query: z.string().trim().min(1).max(100),
-  limit: z.coerce.number().int().min(1).max(50).default(20),
+  q: z.string().trim().min(1).max(100),
+  type: z.enum(["shop_name", "phone", "seller_id"]),
+  limit: z.coerce.number().int().min(1).max(20).default(20),
 });
 export type SellerSearch = z.infer<typeof SellerSearchSchema>;
+
+export const SellerSearchResultSchema = z.object({
+  id: z.string().uuid(),
+  business_name: z.string(),
+  business_name_lao: z.string().nullable(),
+  province: z.string().nullable(),
+  logo_url: z.string().nullable(),
+  verification_status: z.string(),
+  verified_order_count: z.number().int().nonnegative(),
+  caution_level: z.enum(["low", "medium", "high", "insufficient_information"]),
+});
+export type SellerSearchResult = z.infer<typeof SellerSearchResultSchema>;
+
+export const SellerSearchResponseSchema = z.object({
+  data: z.array(SellerSearchResultSchema),
+});
+export type SellerSearchResponse = z.infer<typeof SellerSearchResponseSchema>;
