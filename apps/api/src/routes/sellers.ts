@@ -1,4 +1,5 @@
 import { Hono, type Context } from "hono";
+import { encode as encodePng } from "@cf-wasm/png";
 import {
   CreateSellerSchema,
   SellerExportSchema,
@@ -688,12 +689,57 @@ sellersRoute.get("/:id/export", requireAuth, async (context) => {
 const profileFields =
   "id,business_name,business_name_lao,province,logo_url,verification_status" as const;
 
-const escapeXml = (value: string | null | undefined) =>
-  (value ?? "").replace(/[<>&'\"]/g, (character) =>
-    ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" })[
-      character
-    ]!,
-  );
+const ogFont: Record<string, string[]> = {
+  A: ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
+  B: ["11110", "10001", "10001", "11110", "10001", "10001", "11110"],
+  C: ["01111", "10000", "10000", "10000", "10000", "10000", "01111"],
+  D: ["11110", "10001", "10001", "10001", "10001", "10001", "11110"],
+  E: ["11111", "10000", "10000", "11110", "10000", "10000", "11111"],
+  F: ["11111", "10000", "10000", "11110", "10000", "10000", "10000"],
+  G: ["01111", "10000", "10000", "10111", "10001", "10001", "01111"],
+  I: ["11111", "00100", "00100", "00100", "00100", "00100", "11111"],
+  K: ["10001", "10010", "10100", "11000", "10100", "10010", "10001"],
+  L: ["10000", "10000", "10000", "10000", "10000", "10000", "11111"],
+  M: ["10001", "11011", "10101", "10101", "10001", "10001", "10001"],
+  N: ["10001", "11001", "10101", "10011", "10001", "10001", "10001"],
+  O: ["01110", "10001", "10001", "10001", "10001", "10001", "01110"],
+  P: ["11110", "10001", "10001", "11110", "10000", "10000", "10000"],
+  R: ["11110", "10001", "10001", "11110", "10100", "10010", "10001"],
+  S: ["01111", "10000", "10000", "01110", "00001", "00001", "11110"],
+  T: ["11111", "00100", "00100", "00100", "00100", "00100", "00100"],
+  U: ["10001", "10001", "10001", "10001", "10001", "10001", "01110"],
+  V: ["10001", "10001", "10001", "10001", "10001", "01010", "00100"],
+  Y: ["10001", "10001", "01010", "00100", "00100", "00100", "00100"],
+  "0": ["01110", "10001", "10011", "10101", "11001", "10001", "01110"],
+  "1": ["00100", "01100", "00100", "00100", "00100", "00100", "01110"],
+  "2": ["01110", "10001", "00001", "00010", "00100", "01000", "11111"],
+  "3": ["11110", "00001", "00001", "01110", "00001", "00001", "11110"],
+  "4": ["00010", "00110", "01010", "10010", "11111", "00010", "00010"],
+  "5": ["11111", "10000", "10000", "11110", "00001", "00001", "11110"],
+  "6": ["01110", "10000", "10000", "11110", "10001", "10001", "01110"],
+  "7": ["11111", "00001", "00010", "00100", "01000", "01000", "01000"],
+  "8": ["01110", "10001", "10001", "01110", "10001", "10001", "01110"],
+  "9": ["01110", "10001", "10001", "01111", "00001", "00001", "01110"],
+  " ": ["00000", "00000", "00000", "00000", "00000", "00000", "00000"],
+  "-": ["00000", "00000", "00000", "11111", "00000", "00000", "00000"],
+};
+
+const drawText = (pixels: Uint8Array, text: string, x: number, y: number, scale: number, color: [number, number, number, number]) => {
+  for (const [index, character] of [...text.toUpperCase()].entries()) {
+    const glyph = ogFont[character] ?? ogFont[" "];
+    for (let row = 0; row < glyph.length; row++) for (let column = 0; column < glyph[row].length; column++) if (glyph[row][column] === "1") {
+      for (let dy = 0; dy < scale; dy++) for (let dx = 0; dx < scale; dx++) {
+        const px = x + index * 6 * scale + column * scale + dx;
+        const py = y + row * scale + dy;
+        if (px >= 0 && px < 1200 && py >= 0 && py < 630) pixels.set(color, (py * 1200 + px) * 4);
+      }
+    }
+  }
+};
+
+const drawRect = (pixels: Uint8Array, x: number, y: number, width: number, height: number, color: [number, number, number, number]) => {
+  for (let py = Math.max(0, y); py < Math.min(630, y + height); py++) for (let px = Math.max(0, x); px < Math.min(1200, x + width); px++) pixels.set(color, (py * 1200 + px) * 4);
+};
 
 const phoneCandidates = (value: string) => {
   const digits = value.replace(/\D/g, "");
@@ -832,14 +878,24 @@ sellersRoute.get("/:id/og-image", async (context) => {
   if (error || orderError)
     return apiError(context, 500, "INTERNAL_ERROR", "Seller image failed");
   if (!seller) return apiError(context, 404, "NOT_FOUND", "Seller not found");
-  const name = seller.business_name_lao || seller.business_name || "MeKha seller";
+  const name = (seller.business_name || seller.business_name_lao || "MeKha seller").replace(/[^\x20-\x7E]/g, "").trim() || "MeKha seller";
+  const province = (seller.province || "Lao P.D.R.").replace(/[^\x20-\x7E]/g, "").trim();
   const verified = seller.verification_status === "verified";
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630"><rect width="1200" height="630" fill="#f7f4ea"/><rect width="1200" height="630" fill="#213b60" opacity=".96"/><circle cx="1040" cy="-30" r="260" fill="#d88a1d" opacity=".25"/><text x="72" y="104" fill="#f6c36c" font-family="Arial,sans-serif" font-size="30" font-weight="700">MeKha / LaoTrust</text><text x="72" y="265" fill="white" font-family="Arial,sans-serif" font-size="64" font-weight="700">${escapeXml(name)}</text><text x="72" y="325" fill="#dbe8f5" font-family="Arial,sans-serif" font-size="34">${escapeXml(seller.province || "Lao P.D.R.")}</text><rect x="72" y="392" width="410" height="74" rx="37" fill="${verified ? "#d88a1d" : "#58718f"}"/><text x="108" y="440" fill="white" font-family="Arial,sans-serif" font-size="28" font-weight="700">${verified ? "✓ Verified Seller" : "Trust profile"}</text><text x="72" y="545" fill="#dbe8f5" font-family="Arial,sans-serif" font-size="29">${(orderCount ?? 0).toLocaleString()} verified orders</text></svg>`;
-  return new Response(svg, {
+  const pixels = new Uint8Array(1200 * 630 * 4);
+  drawRect(pixels, 0, 0, 1200, 630, [33, 59, 96, 255]);
+  drawRect(pixels, 930, 0, 270, 180, [216, 138, 29, 90]);
+  drawText(pixels, "MEKHA / LAOTRUST", 72, 75, 5, [246, 195, 108, 255]);
+  drawText(pixels, name.slice(0, 28), 72, 205, 9, [255, 255, 255, 255]);
+  drawText(pixels, province.slice(0, 28), 72, 320, 5, [219, 232, 245, 255]);
+  drawRect(pixels, 72, 400, 500, 78, verified ? [216, 138, 29, 255] : [88, 113, 143, 255]);
+  drawText(pixels, verified ? "VERIFIED SELLER" : "TRUST PROFILE", 105, 425, 5, [255, 255, 255, 255]);
+  drawText(pixels, `${orderCount ?? 0} VERIFIED ORDERS`, 72, 545, 4, [219, 232, 245, 255]);
+  const png = encodePng(pixels, 1200, 630);
+  return new Response(png.buffer as ArrayBuffer, {
     headers: {
-      "Content-Type": "image/svg+xml; charset=utf-8",
+      "Content-Type": "image/png",
       "Cache-Control": "public, max-age=300, s-maxage=3600",
-      "Content-Disposition": `inline; filename="seller-${sellerId}.svg"`,
+      "Content-Disposition": `inline; filename="seller-${sellerId}.png"`,
     },
   });
 });

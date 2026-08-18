@@ -262,7 +262,7 @@ export function SellerProfilePage() {
         <div className="profile-share-links">
           <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(profileUrl)}`} target="_blank" rel="noreferrer">Facebook</a>
           <a href={whatsappUrl} target="_blank" rel="noreferrer">WhatsApp</a>
-          <a href={`https://mekha-api.wen-kt2020.workers.dev/v1/sellers/${seller.id}/og-image`} download={`mekha-seller-${seller.id}-badge.svg`}>Trust badge</a>
+          <a href={`https://mekha-api.wen-kt2020.workers.dev/v1/sellers/${seller.id}/og-image`} download={`mekha-seller-${seller.id}-badge.png`}>Trust badge</a>
         </div>
         <div className="profile-qr">
           {!qrCode ? <button type="button" onClick={() => void createQr()}>ສ້າງ QR Code</button> : <img src={qrCode} alt="QR code for this seller profile" />}
