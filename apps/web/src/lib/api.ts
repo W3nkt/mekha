@@ -41,3 +41,16 @@ export const apiRequest = async <T>(
 
   return payload;
 };
+
+export const apiDownload = async (
+  path: string,
+  init?: RequestInit,
+): Promise<{ blob: Blob; filename: string | null }> => {
+  const response = await fetch(`${apiBaseUrl}${path}`, init);
+  if (!response.ok) {
+    throw new ApiError("Download failed", response.status, "REQUEST_FAILED");
+  }
+  const disposition = response.headers.get("content-disposition") ?? "";
+  const filename = disposition.match(/filename="([^"]+)"/)?.[1] ?? null;
+  return { blob: await response.blob(), filename };
+};

@@ -2255,3 +2255,44 @@ p {
     flex-wrap: wrap;
   }
 }
+.export-page {
+  max-width: 640px;
+  margin-inline: auto;
+  padding-bottom: 80px;
+}
+.export-page header {
+  padding: 26px 0 18px;
+}
+.export-page h1 {
+  margin: 4px 0 0;
+  font-size: 26px;
+}
+.export-date-range {
+  display: block;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--neutral-300);
+}
+.export-date-range > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.export-date-range input {
+  flex: 1;
+}
+.export-date-range span {
+  color: #94a3b8;
+}
+.export-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--neutral-300);
+}
+.export-section h2 {
+  margin: 0;
+  font-size: 17px;
+}
