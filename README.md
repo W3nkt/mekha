@@ -39,6 +39,7 @@ The expected `main` branch policy is versioned in `.github/branch-protection.jso
 - `pnpm db:pull` captures hosted schema changes as a local migration.
 - `pnpm db:types` regenerates shared database types from the linked project.
 - `pnpm db:start`, `pnpm db:status`, and `pnpm db:reset` are optional local-stack commands that require Docker Desktop.
+- `pnpm db:seed` idempotently loads all 18 Lao provinces and 148 districts. Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` first.
 
 Do not run destructive database commands against the hosted production project. Review migrations with `supabase db push --dry-run` before applying them.
 
