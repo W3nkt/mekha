@@ -38,4 +38,13 @@ export type SellerTrustProfile = PublicSellerProfile & {
   months_active: number;
   on_time_rate: number | null;
   dispute_rate: number | null;
+  reviews: PublicSellerReview[];
+};
+
+export type PublicSellerReview = {
+  id: string;
+  rating: number;
+  review_text: string | null;
+  verified_transaction: boolean;
+  created_at: string;
 };

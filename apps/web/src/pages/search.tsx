@@ -28,7 +28,7 @@ const cautionLabels = {
 function SellerCard({ seller }: { seller: SellerSearchResult }) {
   const verified = seller.verification_status === "verified";
   return (
-    <article className="seller-card">
+    <Link className="seller-card" to={`/seller/${seller.id}`}>
       <div className="seller-logo" aria-hidden="true">
         {seller.logo_url ? (
           <img src={seller.logo_url} alt="" />
@@ -61,7 +61,7 @@ function SellerCard({ seller }: { seller: SellerSearchResult }) {
           </span>
         </div>
       </div>
-    </article>
+    </Link>
   );
 }
 

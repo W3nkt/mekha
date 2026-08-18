@@ -703,6 +703,15 @@ p {
   background: var(--white);
   border: 1px solid var(--neutral-300);
   border-radius: 16px;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease;
+}
+.seller-card:hover {
+  transform: translateY(-2px);
+  border-color: #94a3b8;
 }
 .seller-logo {
   display: grid;
@@ -840,6 +849,315 @@ p {
   }
   .seller-card__heading .mk-trust-badge {
     justify-self: start;
+  }
+}
+.seller-profile-page {
+  max-width: 860px;
+  margin-inline: auto;
+  padding-bottom: 80px;
+}
+.profile-identity {
+  display: grid;
+  grid-template-columns: 86px 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 34px 0 28px;
+  border-bottom: 1px solid var(--neutral-300);
+}
+.profile-avatar {
+  width: 86px;
+  height: 86px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--brand-500);
+  background: #dbeafe;
+  border-radius: 22px;
+}
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.profile-name h1 {
+  margin: 3px 0;
+  font-size: clamp(28px, 6vw, 46px);
+  line-height: var(--leading-lao-heading);
+  letter-spacing: -0.035em;
+}
+.profile-name > p:last-child {
+  margin: 0;
+  color: #64748b;
+}
+.profile-share {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 15px;
+  color: var(--brand-900);
+  background: var(--white);
+  border: 1px solid var(--neutral-300);
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 750;
+}
+.profile-location {
+  grid-column: 2 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 18px;
+  color: #64748b;
+  font-size: 14px;
+}
+.profile-location span {
+  border-left: 1px solid var(--neutral-300);
+  padding-left: 18px;
+}
+.verification-band {
+  display: flex;
+  gap: 14px;
+  margin: 24px 0;
+  padding: 20px 22px;
+  border-left: 5px solid;
+}
+.verification-band h2 {
+  margin: 0 0 2px;
+  font-size: 18px;
+}
+.verification-band p {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.8;
+}
+.verification-band--verified {
+  color: #14532d;
+  background: #ecfdf5;
+  border-color: #16a34a;
+}
+.verification-band--partial {
+  color: #78350f;
+  background: #fffbeb;
+  border-color: #d97706;
+}
+.verification-band--unverified {
+  color: #475569;
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+.profile-section {
+  padding: 34px 0;
+  border-bottom: 1px solid var(--neutral-300);
+}
+.profile-section__heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+}
+.profile-section h2 {
+  margin: 4px 0 0;
+  font-size: clamp(23px, 4vw, 31px);
+  line-height: var(--leading-lao-heading);
+}
+.caution-label {
+  padding: 6px 11px;
+  border-radius: 8px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.caution-label--low {
+  color: var(--success);
+  background: #dcfce7;
+}
+.caution-label--medium {
+  color: var(--warning);
+  background: #fef3c7;
+}
+.caution-label--high {
+  color: var(--danger);
+  background: #fee2e2;
+}
+.caution-label--insufficient_information {
+  color: #475569;
+  background: #e2e8f0;
+}
+.trust-signal-list {
+  display: grid;
+  gap: 0;
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.trust-signal {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 12px;
+  padding: 17px 0;
+  border-top: 1px solid #e2e8f0;
+}
+.trust-signal svg {
+  margin-top: 3px;
+}
+.trust-signal strong,
+.trust-signal span {
+  display: block;
+}
+.trust-signal span {
+  color: #64748b;
+  font-size: 13px;
+}
+.trust-signal--positive svg {
+  color: #16a34a;
+}
+.trust-signal--warning svg {
+  color: #d97706;
+}
+.profile-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 26px 0;
+  border-bottom: 1px solid var(--neutral-300);
+}
+.profile-metrics > div {
+  min-width: 0;
+  padding: 0 18px;
+  border-left: 1px solid var(--neutral-300);
+}
+.profile-metrics > div:first-child {
+  padding-left: 0;
+  border: 0;
+}
+.profile-metrics strong,
+.profile-metrics span,
+.profile-metrics small {
+  display: block;
+}
+.profile-metrics strong {
+  font-size: 25px;
+  font-variant-numeric: tabular-nums;
+}
+.profile-metrics span {
+  color: #475569;
+  font-size: 13px;
+}
+.profile-metrics small {
+  color: #94a3b8;
+  font-size: 10px;
+}
+.review-row {
+  position: relative;
+  padding: 20px 0;
+  border-top: 1px solid #e2e8f0;
+}
+.review-stars {
+  display: flex;
+  gap: 2px;
+  color: #d97706;
+}
+.review-row p {
+  margin: 8px 0;
+}
+.verified-order-badge {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  color: var(--success);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-weight: 750;
+}
+.review-row small {
+  display: block;
+  color: #64748b;
+}
+.unverified-reviews {
+  margin-top: 20px;
+  opacity: 0.68;
+}
+.unverified-reviews h3 {
+  font-size: 15px;
+}
+.muted-copy {
+  color: #64748b;
+  margin-top: 16px;
+}
+.profile-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 30px 0;
+}
+.profile-actions > div {
+  display: flex;
+  gap: 16px;
+}
+.profile-actions > div a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--brand-900);
+  font-weight: 750;
+}
+.profile-loading {
+  width: 100%;
+  height: 480px;
+  margin-top: 24px;
+}
+.profile-state {
+  min-height: 55svh;
+  display: grid;
+  place-content: center;
+  text-align: center;
+}
+.profile-state strong {
+  color: var(--warning);
+  letter-spacing: 0.1em;
+}
+@media (max-width: 620px) {
+  .profile-identity {
+    grid-template-columns: 70px 1fr;
+  }
+  .profile-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 18px;
+  }
+  .profile-share {
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
+  .profile-location {
+    grid-column: 1 / -1;
+  }
+  .profile-location span {
+    width: 100%;
+    padding-left: 0;
+    border: 0;
+  }
+  .profile-section__heading {
+    display: grid;
+    align-items: start;
+  }
+  .caution-label {
+    white-space: normal;
+  }
+  .profile-metrics {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px 0;
+  }
+  .profile-metrics > div:nth-child(3) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .profile-actions {
+    display: grid;
   }
 }
 @keyframes page-in {

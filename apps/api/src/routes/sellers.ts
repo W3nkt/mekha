@@ -126,3 +126,188 @@ sellersRoute.get("/search", async (context) => {
     })),
   });
 });
+
+const signalMessages = {
+  identity_verified: {
+    lo: "ຢືນຢັນຕົວຕົນແລ້ວ",
+    en: "Identity document verified by the LaoTrust team",
+  },
+  orders_delivered: {
+    lo: "ມີຄຳສັ່ງຊື້ທີ່ສົ່ງສຳເລັດ",
+    en: "Has verified completed deliveries",
+  },
+  new_seller: {
+    lo: "ຮ້ານເປີດໃໝ່ — ລົງທະບຽນບໍ່ເຖິງ 30 ມື້",
+    en: "New seller — registered less than 30 days ago",
+  },
+  unverified: {
+    lo: "ຜູ້ຂາຍຍັງບໍ່ໄດ້ສົ່ງເອກະສານຢືນຢັນ",
+    en: "Seller has not submitted identity documents",
+  },
+  reported_warning: {
+    lo: "ພົບສັນຍານທີ່ຄວນກວດສອບເພີ່ມ",
+    en: "A signal requires additional checking before payment",
+  },
+} as const;
+
+sellersRoute.get("/:id", async (context) => {
+  const sellerId = context.req.param("id");
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      sellerId,
+    )
+  ) {
+    return apiError(context, 404, "NOT_FOUND", "Seller not found");
+  }
+
+  const supabase = createSupabaseClient(context.env);
+  const profileResponse = await supabase
+    .from("seller_profiles")
+    .select(
+      "id,business_name,business_name_lao,description,province,district,logo_url,verification_status,facebook_url,tiktok_url,created_at",
+    )
+    .eq("id", sellerId)
+    .neq("verification_status", "suspended")
+    .maybeSingle();
+
+  if (profileResponse.error) {
+    return apiError(context, 500, "INTERNAL_ERROR", "Seller profile failed");
+  }
+  if (!profileResponse.data) {
+    return apiError(context, 404, "NOT_FOUND", "Seller not found");
+  }
+
+  const [
+    verifiedOrders,
+    totalOrders,
+    disputes,
+    risks,
+    verifiedReviews,
+    unverifiedReviews,
+  ] = await Promise.all([
+    supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("seller_id", sellerId)
+      .in("status", ["delivered", "settled"]),
+    supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("seller_id", sellerId),
+    supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("seller_id", sellerId)
+      .eq("status", "disputed"),
+    supabase
+      .from("risk_signals")
+      .select("signal_type,severity")
+      .eq("seller_id", sellerId)
+      .eq("is_active", true)
+      .eq("status", "active"),
+    supabase
+      .from("reviews")
+      .select("id,rating_overall,review_text,verified_transaction,created_at")
+      .eq("seller_id", sellerId)
+      .eq("status", "active")
+      .eq("verified_transaction", true)
+      .order("created_at", { ascending: false })
+      .limit(5),
+    supabase
+      .from("reviews")
+      .select("id,rating_overall,review_text,verified_transaction,created_at")
+      .eq("seller_id", sellerId)
+      .eq("status", "active")
+      .eq("verified_transaction", false)
+      .order("created_at", { ascending: false })
+      .limit(5),
+  ]);
+  if (
+    verifiedOrders.error ||
+    totalOrders.error ||
+    disputes.error ||
+    risks.error ||
+    verifiedReviews.error ||
+    unverifiedReviews.error
+  ) {
+    return apiError(context, 500, "INTERNAL_ERROR", "Seller trust data failed");
+  }
+
+  const verifiedOrderCount = verifiedOrders.count ?? 0;
+  const totalOrderCount = totalOrders.count ?? 0;
+  const disputeCount = disputes.count ?? 0;
+  const ageMs =
+    Date.now() - new Date(profileResponse.data.created_at).getTime();
+  const monthsActive = Math.max(0, Math.floor(ageMs / 2_629_746_000));
+  const trustSignals = [];
+  if (profileResponse.data.verification_status === "verified") {
+    trustSignals.push({
+      type: "positive" as const,
+      code: "identity_verified",
+      message_lo: signalMessages.identity_verified.lo,
+      message_en: signalMessages.identity_verified.en,
+    });
+  } else {
+    trustSignals.push({
+      type: "warning" as const,
+      code: "unverified",
+      message_lo: signalMessages.unverified.lo,
+      message_en: signalMessages.unverified.en,
+    });
+  }
+  if (verifiedOrderCount > 0)
+    trustSignals.push({
+      type: "positive" as const,
+      code: "orders_delivered",
+      message_lo: `${signalMessages.orders_delivered.lo} ${verifiedOrderCount} ຄຳສັ່ງ`,
+      message_en: `${verifiedOrderCount} verified completed deliveries`,
+    });
+  if (ageMs < 30 * 86_400_000)
+    trustSignals.push({
+      type: "warning" as const,
+      code: "new_seller",
+      message_lo: signalMessages.new_seller.lo,
+      message_en: signalMessages.new_seller.en,
+    });
+  for (const risk of risks.data ?? [])
+    trustSignals.push({
+      type: risk.severity,
+      code: risk.signal_type,
+      message_lo: signalMessages.reported_warning.lo,
+      message_en: signalMessages.reported_warning.en,
+    });
+  const cautionLevel: CautionLevel = (risks.data ?? []).some(
+    ({ severity }) => severity === "critical",
+  )
+    ? "high"
+    : (risks.data ?? []).some(({ severity }) => severity === "warning")
+      ? "medium"
+      : verifiedOrderCount > 0 ||
+          profileResponse.data.verification_status === "verified"
+        ? "low"
+        : "insufficient_information";
+
+  return context.json({
+    data: {
+      ...profileResponse.data,
+      caution_level: cautionLevel,
+      trust_signals: trustSignals,
+      verified_order_count: verifiedOrderCount,
+      months_active: monthsActive,
+      on_time_rate: null,
+      dispute_rate: totalOrderCount
+        ? Math.round((disputeCount / totalOrderCount) * 1000) / 10
+        : null,
+      reviews: [
+        ...(verifiedReviews.data ?? []),
+        ...(unverifiedReviews.data ?? []),
+      ].map((review) => ({
+        id: review.id,
+        rating: review.rating_overall ?? 0,
+        review_text: review.review_text,
+        verified_transaction: review.verified_transaction,
+        created_at: review.created_at,
+      })),
+    },
+  });
+});

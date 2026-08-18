@@ -103,6 +103,16 @@ describe("Mekha API", () => {
     });
   });
 
+  it("returns 404 for an invalid public seller profile ID", async () => {
+    const response = await request("/v1/sellers/not-a-seller", createEnv());
+
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "NOT_FOUND",
+      error: "Seller not found",
+    });
+  });
+
   it("rejects an invalid Supabase access token", async () => {
     vi.stubGlobal(
       "fetch",
