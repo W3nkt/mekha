@@ -91,7 +91,12 @@ create table public.risk_signals (
 create table public.orders (
   id uuid primary key default gen_random_uuid(),
   buyer_id uuid references public.users(id) on delete set null,
-  seller_id uuid not null references public.seller_profiles(id),
+  -- restrict: seller_profiles rows with transactional history (orders,
+  -- reviews, reports, cod_settlements, subscriptions) must not be
+  -- hard-deletable out from under that history; use seller status changes
+  -- instead. Sub-resources owned entirely by the seller (identifiers,
+  -- verifications, risk_signals, products, customers) cascade instead.
+  seller_id uuid not null references public.seller_profiles(id) on delete restrict,
   product_snapshot jsonb not null,
   amount numeric(12, 2) not null check (amount >= 0),
   delivery_fee numeric(12, 2) not null default 0 check (delivery_fee >= 0),
@@ -128,7 +133,8 @@ create table public.reviews (
   id uuid primary key default gen_random_uuid(),
   order_id uuid references public.orders(id) on delete set null,
   buyer_id uuid not null references public.users(id),
-  seller_id uuid not null references public.seller_profiles(id),
+  -- restrict: see the seller_id comment on public.orders above.
+  seller_id uuid not null references public.seller_profiles(id) on delete restrict,
   rating_overall integer check (rating_overall between 1 and 5),
   rating_description integer check (rating_description between 1 and 5),
   rating_delivery integer check (rating_delivery between 1 and 5),
@@ -143,7 +149,8 @@ create table public.reviews (
 create table public.reports (
   id uuid primary key default gen_random_uuid(),
   reporter_id uuid not null references public.users(id),
-  seller_id uuid not null references public.seller_profiles(id),
+  -- restrict: see the seller_id comment on public.orders above.
+  seller_id uuid not null references public.seller_profiles(id) on delete restrict,
   order_id uuid references public.orders(id) on delete set null,
   report_type text not null check (
     report_type in (
@@ -168,7 +175,11 @@ create table public.reports (
 
 create table public.disputes (
   id uuid primary key default gen_random_uuid(),
-  order_id uuid not null references public.orders(id),
+  -- restrict (not cascade/set null): a dispute is the compliance record of
+  -- last resort and must block order deletion outright, unlike the
+  -- cascade-deleted order_evidence/courier_labels artifacts or the
+  -- set-null'd reviews/reports that are meant to outlive the order.
+  order_id uuid not null references public.orders(id) on delete restrict,
   opened_by uuid references public.users(id) on delete set null,
   status text not null default 'open' check (status in ('open', 'under_review', 'resolved', 'escalated')),
   summary text,
@@ -223,7 +234,8 @@ create table public.courier_labels (
 
 create table public.cod_settlements (
   id uuid primary key default gen_random_uuid(),
-  seller_id uuid not null references public.seller_profiles(id),
+  -- restrict: see the seller_id comment on public.orders above.
+  seller_id uuid not null references public.seller_profiles(id) on delete restrict,
   courier text not null,
   file_path text,
   import_status text not null default 'pending' check (
@@ -260,7 +272,8 @@ create table public.sync_queue (
 
 create table public.subscriptions (
   id uuid primary key default gen_random_uuid(),
-  seller_id uuid not null references public.seller_profiles(id),
+  -- restrict: see the seller_id comment on public.orders above.
+  seller_id uuid not null references public.seller_profiles(id) on delete restrict,
   plan text not null check (plan in ('free', 'standard', 'pro')),
   status text not null default 'active' check (status in ('active', 'cancelled', 'expired', 'trial')),
   started_at timestamptz not null default now(),

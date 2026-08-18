@@ -69,6 +69,10 @@ begin
     raise exception '% required indexes are missing', missing_count;
   end if;
 
+  -- A supporting index must carry the FK's columns as its leading columns,
+  -- in the same order (array containment alone would accept a composite
+  -- index whose matching columns aren't leftmost, which Postgres can't
+  -- actually use to satisfy the FK's lookups).
   select count(*)
   into missing_count
   from pg_constraint as foreign_key
@@ -78,7 +82,13 @@ begin
       select 1
       from pg_index as supporting_index
       where supporting_index.indrelid = foreign_key.conrelid
-        and foreign_key.conkey <@ supporting_index.indkey::smallint[]
+        and cardinality(supporting_index.indkey::smallint[]) >= cardinality(foreign_key.conkey)
+        and (
+          select bool_and(fk_col.value = idx_col.value)
+          from unnest(foreign_key.conkey) with ordinality as fk_col(value, ord)
+          join unnest(supporting_index.indkey::smallint[]) with ordinality as idx_col(value, ord)
+            on idx_col.ord = fk_col.ord
+        )
     );
 
   if missing_count > 0 then

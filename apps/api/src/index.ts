@@ -18,7 +18,12 @@ const app = new Hono<ApiEnv>();
 
 app.use("*", corsMiddleware);
 app.use("*", structuredLogger);
-app.use("*", prettyJSON());
+app.use("*", async (c, next) => {
+  if (c.env.ENVIRONMENT === "production") {
+    return next();
+  }
+  return prettyJSON()(c, next);
+});
 
 app.route("/v1/health", healthRoute);
 app.use("/v1/sellers/*", publicRateLimit);
