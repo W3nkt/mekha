@@ -18,6 +18,7 @@ import { SellerDashboardPage } from "./pages/dashboard";
 import { SellerSectionPage } from "./pages/seller-section";
 import { ManualOrderPage } from "./pages/manual-order";
 import { OrderDetailPage, OrdersListPage } from "./pages/orders";
+import { CustomerDetailPage, CustomersPage } from "./pages/customers";
 
 export const router = createBrowserRouter([
   {
@@ -42,6 +43,8 @@ export const router = createBrowserRouter([
       { path: "/dashboard/finance", element: <SellerSectionPage /> },
       { path: "/dashboard/trust", element: <SellerSectionPage /> },
       { path: "/dashboard/settings", element: <SellerSectionPage /> },
+      { path: "/dashboard/customers", element: <CustomersPage /> },
+      { path: "/dashboard/customers/:id", element: <CustomerDetailPage /> },
       { path: "/admin/verifications", element: <AdminVerificationsPage /> },
       {
         path: "/register/verification",
