@@ -16,7 +16,7 @@ export default defineConfig({
         navigateFallback: "/index.html",
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/mekha-api\.wen-kt2020\.workers\.dev\//,
+            urlPattern: ({ url }) => url.pathname.startsWith("/v1/"),
             handler: "NetworkFirst",
             options: { cacheName: "mekha-api-cache", networkTimeoutSeconds: 3 },
           },

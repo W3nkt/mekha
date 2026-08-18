@@ -1,5 +1,4 @@
-const apiBaseUrl =
-  import.meta.env.VITE_API_URL ?? "https://mekha-api.wen-kt2020.workers.dev";
+const apiBaseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8787";
 
 export class ApiError extends Error {
   constructor(
