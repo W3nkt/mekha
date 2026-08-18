@@ -327,6 +327,59 @@ export type Database = {
           },
         ];
       };
+      lao_districts: {
+        Row: {
+          id: string;
+          name_en: string;
+          name_lo: string;
+          province_id: string;
+          sort_order: number;
+        };
+        Insert: {
+          id: string;
+          name_en: string;
+          name_lo: string;
+          province_id: string;
+          sort_order?: number;
+        };
+        Update: {
+          id?: string;
+          name_en?: string;
+          name_lo?: string;
+          province_id?: string;
+          sort_order?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "lao_districts_province_id_fkey";
+            columns: ["province_id"];
+            isOneToOne: false;
+            referencedRelation: "lao_provinces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      lao_provinces: {
+        Row: {
+          id: string;
+          name_en: string;
+          name_lo: string;
+          sort_order: number;
+        };
+        Insert: {
+          id: string;
+          name_en: string;
+          name_lo: string;
+          sort_order?: number;
+        };
+        Update: {
+          id?: string;
+          name_en?: string;
+          name_lo?: string;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
       moderation_actions: {
         Row: {
           action: string;
