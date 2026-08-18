@@ -872,6 +872,41 @@ export type Database = {
           },
         ];
       };
+      verification_upload_intents: {
+        Row: {
+          created_at: string;
+          expires_at: string;
+          mime_type: string;
+          path: string;
+          seller_id: string;
+          verification_type: string;
+        };
+        Insert: {
+          created_at?: string;
+          expires_at: string;
+          mime_type: string;
+          path: string;
+          seller_id: string;
+          verification_type: string;
+        };
+        Update: {
+          created_at?: string;
+          expires_at?: string;
+          mime_type?: string;
+          path?: string;
+          seller_id?: string;
+          verification_type?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "verification_upload_intents_seller_id_fkey";
+            columns: ["seller_id"];
+            isOneToOne: false;
+            referencedRelation: "seller_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       seller_verifications: {
         Row: {
           created_at: string;

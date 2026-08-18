@@ -6,6 +6,7 @@ export * from "./api/reports";
 export * from "./api/reviews";
 export * from "./api/sellers";
 export * from "./api/trust";
+export * from "./api/verification";
 export * from "./domain/courier";
 export * from "./domain/customer";
 export * from "./domain/order";

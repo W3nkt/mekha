@@ -199,7 +199,7 @@ export function RegisterProfilePage() {
         }),
       });
       sessionStorage.removeItem(PHONE_KEY);
-      navigate("/register/verification");
+      navigate("/seller/verify");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "ສ້າງຮ້ານຄ້າບໍ່ສຳເລັດ");
     }

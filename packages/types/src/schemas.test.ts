@@ -7,6 +7,7 @@ import {
   RequestOtpSchema,
   TrustCheckSchema,
   VerifyOtpSchema,
+  VerificationUploadSchema,
   normalizeLaoPhone,
   type CourierAdapter,
   type OrderWithAddress,
@@ -67,6 +68,23 @@ describe("shared API schemas", () => {
       CreateReportSchema.safeParse({
         report_type: "invalid",
         description: "too short",
+      }).success,
+    ).toBe(false);
+  });
+
+  it("restricts verification uploads to safe document types", () => {
+    expect(
+      VerificationUploadSchema.safeParse({
+        filename: "identity.jpg",
+        mime_type: "image/jpeg",
+        verification_type: "identity",
+      }).success,
+    ).toBe(true);
+    expect(
+      VerificationUploadSchema.safeParse({
+        filename: "identity.svg",
+        mime_type: "image/svg+xml",
+        verification_type: "identity",
       }).success,
     ).toBe(false);
   });

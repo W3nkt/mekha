@@ -1,7 +1,9 @@
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import {
   CreateSellerSchema,
   SellerSearchSchema,
+  SubmitVerificationSchema,
+  VerificationUploadSchema,
   type CautionLevel,
 } from "@mekha/types";
 import { computeTrustProfile } from "@mekha/utils";
@@ -12,6 +14,19 @@ import type { ApiEnv } from "../types";
 import { requireAuth } from "../middleware/auth";
 
 export const sellersRoute = new Hono<ApiEnv>();
+
+const ownedSeller = async (context: Context<ApiEnv>) => {
+  const sellerId = context.req.param("id") ?? "";
+  const user = context.get("user");
+  const supabase = createSupabaseClient(context.env);
+  const result = await supabase
+    .from("seller_profiles")
+    .select("id")
+    .eq("id", sellerId)
+    .eq("owner_user_id", user.id)
+    .maybeSingle();
+  return { sellerId, supabase, seller: result.data, error: result.error };
+};
 
 sellersRoute.get("/", (context) => context.json({ data: [] }));
 
@@ -104,6 +119,195 @@ sellersRoute.post("/", requireAuth, async (context) => {
     return apiError(context, 500, "INTERNAL_ERROR", "ບໍ່ສາມາດສ້າງຮ້ານຄ້າໄດ້");
   }
   return context.json({ data: seller }, 201);
+});
+
+sellersRoute.get("/me", requireAuth, async (context) => {
+  const supabase = createSupabaseClient(context.env);
+  const { data, error } = await supabase
+    .from("seller_profiles")
+    .select("id,business_name_lao,verification_status")
+    .eq("owner_user_id", context.get("user").id)
+    .maybeSingle();
+  if (error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ໂຫລດຮ້ານຄ້າບໍ່ສຳເລັດ");
+  if (!data) return apiError(context, 404, "NOT_FOUND", "ບໍ່ພົບຮ້ານຄ້າ");
+  return context.json({ data });
+});
+
+sellersRoute.post("/:id/verification-upload", requireAuth, async (context) => {
+  const parsed = VerificationUploadSchema.safeParse(
+    await context.req.json().catch(() => null),
+  );
+  if (!parsed.success)
+    return apiError(context, 400, "BAD_REQUEST", "ປະເພດໄຟລ໌ບໍ່ຖືກຕ້ອງ");
+  const {
+    sellerId,
+    supabase,
+    seller,
+    error: ownerError,
+  } = await ownedSeller(context);
+  if (ownerError)
+    return apiError(context, 500, "INTERNAL_ERROR", "ກວດສອບຮ້ານຄ້າບໍ່ສຳເລັດ");
+  if (!seller)
+    return apiError(context, 403, "FORBIDDEN", "ທ່ານບໍ່ມີສິດຈັດການຮ້ານນີ້");
+  const extension =
+    parsed.data.mime_type === "image/jpeg"
+      ? "jpg"
+      : parsed.data.mime_type === "image/png"
+        ? "png"
+        : "pdf";
+  const path = `${sellerId}/${crypto.randomUUID()}-${parsed.data.verification_type}.${extension}`;
+  const { data, error } = await supabase.storage
+    .from("verification-docs")
+    .createSignedUploadUrl(path);
+  if (error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ສ້າງລິ້ງອັບໂຫລດບໍ່ສຳເລັດ");
+  const expiresAt = new Date(Date.now() + 15 * 60_000).toISOString();
+  const intent = await supabase.from("verification_upload_intents").insert({
+    path,
+    seller_id: sellerId,
+    verification_type: parsed.data.verification_type,
+    mime_type: parsed.data.mime_type,
+    expires_at: expiresAt,
+  });
+  if (intent.error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ສ້າງການອັບໂຫລດບໍ່ສຳເລັດ");
+  return context.json({
+    upload_url: data.signedUrl,
+    token: data.token,
+    path,
+    expires_at: expiresAt,
+  });
+});
+
+sellersRoute.post("/:id/verification", requireAuth, async (context) => {
+  const parsed = SubmitVerificationSchema.safeParse(
+    await context.req.json().catch(() => null),
+  );
+  if (!parsed.success)
+    return apiError(context, 400, "BAD_REQUEST", "ຂໍ້ມູນເອກະສານບໍ່ຖືກຕ້ອງ");
+  const {
+    sellerId,
+    supabase,
+    seller,
+    error: ownerError,
+  } = await ownedSeller(context);
+  if (ownerError)
+    return apiError(context, 500, "INTERNAL_ERROR", "ກວດສອບຮ້ານຄ້າບໍ່ສຳເລັດ");
+  if (!seller)
+    return apiError(context, 403, "FORBIDDEN", "ທ່ານບໍ່ມີສິດຈັດການຮ້ານນີ້");
+  const pathPattern = new RegExp(
+    `^${sellerId}/[0-9a-f-]{36}-${parsed.data.verification_type}\\.(jpg|png|pdf)$`,
+  );
+  if (!pathPattern.test(parsed.data.document_path))
+    return apiError(context, 400, "BAD_REQUEST", "ທີ່ຢູ່ເອກະສານບໍ່ຖືກຕ້ອງ");
+  const now = new Date().toISOString();
+  const { data: intent, error: intentError } = await supabase
+    .from("verification_upload_intents")
+    .update({ expires_at: now })
+    .eq("path", parsed.data.document_path)
+    .eq("seller_id", sellerId)
+    .eq("verification_type", parsed.data.verification_type)
+    .gt("expires_at", now)
+    .select("path")
+    .maybeSingle();
+  if (intentError)
+    return apiError(
+      context,
+      500,
+      "INTERNAL_ERROR",
+      "ກວດສອບການອັບໂຫລດບໍ່ສຳເລັດ",
+    );
+  if (!intent)
+    return apiError(context, 400, "BAD_REQUEST", "ລິ້ງອັບໂຫລດໝົດອາຍຸແລ້ວ");
+  const downloaded = await supabase.storage
+    .from("verification-docs")
+    .download(parsed.data.document_path);
+  if (downloaded.error || !downloaded.data)
+    return apiError(context, 400, "BAD_REQUEST", "ບໍ່ພົບໄຟລ໌ທີ່ອັບໂຫລດ");
+  if (downloaded.data.size > 10 * 1024 * 1024)
+    return apiError(context, 400, "BAD_REQUEST", "ໄຟລ໌ໃຫຍ່ເກີນ 10MB");
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    await downloaded.data.arrayBuffer(),
+  );
+  const serverHash = Array.from(new Uint8Array(digest), (byte) =>
+    byte.toString(16).padStart(2, "0"),
+  ).join("");
+  if (serverHash !== parsed.data.file_hash) {
+    await supabase.storage
+      .from("verification-docs")
+      .remove([parsed.data.document_path]);
+    return apiError(
+      context,
+      422,
+      "UNPROCESSABLE_ENTITY",
+      "ໄຟລ໌ຖືກປ່ຽນແປງ ກະລຸນາອັບໂຫລດໃໝ່",
+    );
+  }
+  const { data: verification, error } = await supabase
+    .from("seller_verifications")
+    .insert({
+      seller_id: sellerId,
+      verification_type: parsed.data.verification_type,
+      document_paths: [parsed.data.document_path],
+      status: "pending",
+      submitted_data: {
+        file_hash: serverHash,
+        notes: parsed.data.notes ?? null,
+      },
+    })
+    .select("id,status,created_at")
+    .single();
+  if (error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ບັນທຶກເອກະສານບໍ່ສຳເລັດ");
+  const audit = await supabase.from("audit_logs").insert({
+    actor_id: context.get("user").id,
+    event: "seller.verification_submitted",
+    entity_type: "seller_verification",
+    entity_id: verification.id,
+    metadata: {
+      seller_id: sellerId,
+      verification_type: parsed.data.verification_type,
+      file_hash: serverHash,
+    },
+  });
+  if (audit.error) {
+    await supabase
+      .from("seller_verifications")
+      .delete()
+      .eq("id", verification.id);
+    return apiError(context, 500, "INTERNAL_ERROR", "ບັນທຶກປະຫວັດບໍ່ສຳເລັດ");
+  }
+  await supabase
+    .from("verification_upload_intents")
+    .delete()
+    .eq("path", parsed.data.document_path);
+  return context.json(
+    { verification_id: verification.id, status: verification.status },
+    201,
+  );
+});
+
+sellersRoute.get("/:id/verifications", requireAuth, async (context) => {
+  const {
+    sellerId,
+    supabase,
+    seller,
+    error: ownerError,
+  } = await ownedSeller(context);
+  if (ownerError)
+    return apiError(context, 500, "INTERNAL_ERROR", "ກວດສອບຮ້ານຄ້າບໍ່ສຳເລັດ");
+  if (!seller)
+    return apiError(context, 403, "FORBIDDEN", "ທ່ານບໍ່ມີສິດເບິ່ງຂໍ້ມູນນີ້");
+  const { data, error } = await supabase
+    .from("seller_verifications")
+    .select("id,verification_type,status,reviewer_notes,created_at")
+    .eq("seller_id", sellerId)
+    .order("created_at", { ascending: false });
+  if (error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ໂຫລດສະຖານະບໍ່ສຳເລັດ");
+  return context.json({ data });
 });
 
 const profileFields =
