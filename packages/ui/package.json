@@ -7,9 +7,16 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "build": "node ../../scripts/build-placeholder.mjs",
+    "build": "tsc --noEmit",
     "test": "node --test",
     "lint": "tsc --noEmit",
     "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mekha/types": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "react": "19.2.4"
   }
 }

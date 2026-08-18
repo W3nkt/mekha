@@ -69,6 +69,17 @@ describe("Mekha API", () => {
     );
   });
 
+  it("allows Mekha Pages preview origins", async () => {
+    const previewOrigin = "https://agent-s0-foundation.mekha-web.pages.dev";
+    const response = await request("/v1/health", createEnv(), {
+      origin: previewOrigin,
+    });
+
+    expect(response.headers.get("access-control-allow-origin")).toBe(
+      previewOrigin,
+    );
+  });
+
   it("rejects a protected route without a token", async () => {
     const response = await request("/v1/orders", createEnv());
 
@@ -76,6 +87,29 @@ describe("Mekha API", () => {
     await expect(response.json()).resolves.toMatchObject({
       error: "Unauthorized",
       code: "UNAUTHORIZED",
+    });
+  });
+
+  it("validates public seller search parameters", async () => {
+    const response = await request(
+      "/v1/sellers/search?q=&type=unknown",
+      createEnv(),
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "BAD_REQUEST",
+      error: "Invalid seller search",
+    });
+  });
+
+  it("returns 404 for an invalid public seller profile ID", async () => {
+    const response = await request("/v1/sellers/not-a-seller", createEnv());
+
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "NOT_FOUND",
+      error: "Seller not found",
     });
   });
 

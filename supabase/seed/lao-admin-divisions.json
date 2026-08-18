@@ -1,0 +1,1038 @@
+{
+  "source": "https://www.citypopulation.de/en/laos/admin/",
+  "source_note": "Lao Statistics Bureau census results and official estimates/projections, as republished by City Population",
+  "provinces": [
+    {
+      "id": "VTE",
+      "name_en": "Vientiane Capital",
+      "name_lo": "ນະຄອນຫລວງວຽງຈັນ",
+      "code": "VTE",
+      "districts": [
+        {
+          "id": "VTE-0101",
+          "name_en": "Chanthabuly",
+          "name_lo": "ຈັນທະບູລີ",
+          "province_id": "VTE"
+        },
+        {
+          "id": "VTE-0107",
+          "name_en": "Hadxaifong",
+          "name_lo": "ຫາດຊາຍຟອງ",
+          "province_id": "VTE"
+        },
+        {
+          "id": "VTE-0109",
+          "name_en": "Mayparkngeum",
+          "name_lo": "ປາກງື່ມ",
+          "province_id": "VTE"
+        },
+        {
+          "id": "VTE-0105",
+          "name_en": "Naxaithong",
+          "name_lo": "ນາຊາຍທອງ",
+          "province_id": "VTE"
+        },
+        {
+          "id": "VTE-0108",
+          "name_en": "Sangthong",
+          "name_lo": "ສັງທອງ",
+          "province_id": "VTE"
+        },
+        {
+          "id": "VTE-0102",
+          "name_en": "Sikhottabong",
+          "name_lo": "ສີໂຄດຕະບອງ",
+          "province_id": "VTE"
+        },
+        {
+          "id": "VTE-0104",
+          "name_en": "Sisattanak",
+          "name_lo": "ສີສັດຕະນາກ",
+          "province_id": "VTE"
+        },
+        {
+          "id": "VTE-0103",
+          "name_en": "Xaysetha",
+          "name_lo": "ໄຊເສດຖາ",
+          "province_id": "VTE"
+        },
+        {
+          "id": "VTE-0106",
+          "name_en": "Xaythany",
+          "name_lo": "ໄຊທະນີ",
+          "province_id": "VTE"
+        }
+      ]
+    },
+    {
+      "id": "PSL",
+      "name_en": "Phongsali",
+      "name_lo": "ຜົ້ງສາລີ",
+      "code": "PSL",
+      "districts": [
+        {
+          "id": "PSL-0205",
+          "name_en": "Boun Neua",
+          "name_lo": "ບຸນເໜືອ",
+          "province_id": "PSL"
+        },
+        {
+          "id": "PSL-0207",
+          "name_en": "Boun Tay",
+          "name_lo": "ບຸນໃຕ້",
+          "province_id": "PSL"
+        },
+        {
+          "id": "PSL-0203",
+          "name_en": "Khoua",
+          "name_lo": "ຂວາ",
+          "province_id": "PSL"
+        },
+        {
+          "id": "PSL-0202",
+          "name_en": "May",
+          "name_lo": "ໃໝ່",
+          "province_id": "PSL"
+        },
+        {
+          "id": "PSL-0206",
+          "name_en": "Nhot Ou",
+          "name_lo": "ຍອດອູ",
+          "province_id": "PSL"
+        },
+        {
+          "id": "PSL-0201",
+          "name_en": "Phongsaly",
+          "name_lo": "ຜົ້ງສາລີ",
+          "province_id": "PSL"
+        },
+        {
+          "id": "PSL-0204",
+          "name_en": "Samphanh",
+          "name_lo": "ສຳພັນ",
+          "province_id": "PSL"
+        }
+      ]
+    },
+    {
+      "id": "LNT",
+      "name_en": "Luang Namtha",
+      "name_lo": "ຫລວງນ້ຳທາ",
+      "code": "LNT",
+      "districts": [
+        {
+          "id": "LNT-0303",
+          "name_en": "Long",
+          "name_lo": "ລອງ",
+          "province_id": "LNT"
+        },
+        {
+          "id": "LNT-0305",
+          "name_en": "Nalae",
+          "name_lo": "ນາແລ",
+          "province_id": "LNT"
+        },
+        {
+          "id": "LNT-0301",
+          "name_en": "Namtha",
+          "name_lo": "ນ້ຳທາ",
+          "province_id": "LNT"
+        },
+        {
+          "id": "LNT-0302",
+          "name_en": "Sing",
+          "name_lo": "ສິງ",
+          "province_id": "LNT"
+        },
+        {
+          "id": "LNT-0304",
+          "name_en": "Viengphoukha",
+          "name_lo": "ວຽງພູຄາ",
+          "province_id": "LNT"
+        }
+      ]
+    },
+    {
+      "id": "ODX",
+      "name_en": "Oudomxay",
+      "name_lo": "ອູດົມໄຊ",
+      "code": "ODX",
+      "districts": [
+        {
+          "id": "ODX-0405",
+          "name_en": "Beng",
+          "name_lo": "ແບງ",
+          "province_id": "ODX"
+        },
+        {
+          "id": "ODX-0406",
+          "name_en": "Houne",
+          "name_lo": "ຮຸນ",
+          "province_id": "ODX"
+        },
+        {
+          "id": "ODX-0402",
+          "name_en": "La",
+          "name_lo": "ຫຼາ",
+          "province_id": "ODX"
+        },
+        {
+          "id": "ODX-0403",
+          "name_en": "Namor",
+          "name_lo": "ນາໝໍ້",
+          "province_id": "ODX"
+        },
+        {
+          "id": "ODX-0404",
+          "name_en": "Nga",
+          "name_lo": "ງາ",
+          "province_id": "ODX"
+        },
+        {
+          "id": "ODX-0407",
+          "name_en": "Pakbeng",
+          "name_lo": "ປາກແບງ",
+          "province_id": "ODX"
+        },
+        {
+          "id": "ODX-0401",
+          "name_en": "Xay",
+          "name_lo": "ໄຊ",
+          "province_id": "ODX"
+        }
+      ]
+    },
+    {
+      "id": "BKO",
+      "name_en": "Bokeo",
+      "name_lo": "ບໍ່ແກ້ວ",
+      "code": "BKO",
+      "districts": [
+        {
+          "id": "BKO-0501",
+          "name_en": "Huoixai",
+          "name_lo": "ຫ້ວຍຊາຍ",
+          "province_id": "BKO"
+        },
+        {
+          "id": "BKO-0503",
+          "name_en": "Meung",
+          "name_lo": "ເມິງ",
+          "province_id": "BKO"
+        },
+        {
+          "id": "BKO-0505",
+          "name_en": "Paktha",
+          "name_lo": "ປາກທາ",
+          "province_id": "BKO"
+        },
+        {
+          "id": "BKO-0504",
+          "name_en": "Pha Oudom",
+          "name_lo": "ຜາອຸດົມ",
+          "province_id": "BKO"
+        },
+        {
+          "id": "BKO-0502",
+          "name_en": "Tonpheung",
+          "name_lo": "ຕົ້ນເຜິ້ງ",
+          "province_id": "BKO"
+        }
+      ]
+    },
+    {
+      "id": "LPB",
+      "name_en": "Luang Prabang",
+      "name_lo": "ຫລວງພະບາງ",
+      "code": "LPB",
+      "districts": [
+        {
+          "id": "LPB-0609",
+          "name_en": "Chomphet",
+          "name_lo": "ຈອມເພັດ",
+          "province_id": "LPB"
+        },
+        {
+          "id": "LPB-0601",
+          "name_en": "Luangprabang",
+          "name_lo": "ຫຼວງພະບາງ",
+          "province_id": "LPB"
+        },
+        {
+          "id": "LPB-0605",
+          "name_en": "Nambak",
+          "name_lo": "ນ້ຳບາກ",
+          "province_id": "LPB"
+        },
+        {
+          "id": "LPB-0603",
+          "name_en": "Nan",
+          "name_lo": "ນານ",
+          "province_id": "LPB"
+        },
+        {
+          "id": "LPB-0606",
+          "name_en": "Ngoy",
+          "name_lo": "ງອຍ",
+          "province_id": "LPB"
+        },
+        {
+          "id": "LPB-0604",
+          "name_en": "Pak Ou",
+          "name_lo": "ປາກອູ",
+          "province_id": "LPB"
+        },
+        {
+          "id": "LPB-0607",
+          "name_en": "Pak Xeng",
+          "name_lo": "ປາກແຊງ",
+          "province_id": "LPB"
+        },
+        {
+          "id": "LPB-0612",
+          "name_en": "Phonthong",
+          "name_lo": "ໂພນທອງ",
+          "province_id": "LPB"
+        },
+        {
+          "id": "LPB-0608",
+          "name_en": "Phonxay",
+          "name_lo": "ໂພນໄຊ",
+          "province_id": "LPB"
+        },
+        {
+          "id": "LPB-0611",
+          "name_en": "Phoukhoune",
+          "name_lo": "ພູຄູນ",
+          "province_id": "LPB"
+        },
+        {
+          "id": "LPB-0610",
+          "name_en": "Viengkham",
+          "name_lo": "ວຽງຄຳ",
+          "province_id": "LPB"
+        },
+        {
+          "id": "LPB-0602",
+          "name_en": "Xiengngeun",
+          "name_lo": "ຊຽງເງີນ",
+          "province_id": "LPB"
+        }
+      ]
+    },
+    {
+      "id": "HPH",
+      "name_en": "Huaphan",
+      "name_lo": "ຫົວພັນ",
+      "code": "HPH",
+      "districts": [
+        {
+          "id": "HPH-0708",
+          "name_en": "Et",
+          "name_lo": "ແອດ",
+          "province_id": "HPH"
+        },
+        {
+          "id": "HPH-0703",
+          "name_en": "Hiem",
+          "name_lo": "ຮ້ຽມ",
+          "province_id": "HPH"
+        },
+        {
+          "id": "HPH-0705",
+          "name_en": "Houameuang",
+          "name_lo": "ຫົວເມືອງ",
+          "province_id": "HPH"
+        },
+        {
+          "id": "HPH-0709",
+          "name_en": "Kuan",
+          "name_lo": "ກວັນ",
+          "province_id": "HPH"
+        },
+        {
+          "id": "HPH-0707",
+          "name_en": "Sopbao",
+          "name_lo": "ສົບເບົາ",
+          "province_id": "HPH"
+        },
+        {
+          "id": "HPH-0704",
+          "name_en": "Viengxay",
+          "name_lo": "ວຽງໄຊ",
+          "province_id": "HPH"
+        },
+        {
+          "id": "HPH-0701",
+          "name_en": "Xamneua",
+          "name_lo": "ຊຳເໜືອ",
+          "province_id": "HPH"
+        },
+        {
+          "id": "HPH-0706",
+          "name_en": "Xamtay",
+          "name_lo": "ຊຳໃຕ້",
+          "province_id": "HPH"
+        },
+        {
+          "id": "HPH-0702",
+          "name_en": "Xiengkhor",
+          "name_lo": "ຊຽງຄໍ້",
+          "province_id": "HPH"
+        },
+        {
+          "id": "HPH-0710",
+          "name_en": "Xon",
+          "name_lo": "ຊ່ອນ",
+          "province_id": "HPH"
+        }
+      ]
+    },
+    {
+      "id": "XBY",
+      "name_en": "Xayaboury",
+      "name_lo": "ໄຊຍະບູລີ",
+      "code": "XBY",
+      "districts": [
+        {
+          "id": "XBY-0809",
+          "name_en": "Botene",
+          "name_lo": "ບໍ່ແຕນ",
+          "province_id": "XBY"
+        },
+        {
+          "id": "XBY-0803",
+          "name_en": "Hongsa",
+          "name_lo": "ຫົງສາ",
+          "province_id": "XBY"
+        },
+        {
+          "id": "XBY-0808",
+          "name_en": "Kenethao",
+          "name_lo": "ແກ່ນທ້າວ",
+          "province_id": "XBY"
+        },
+        {
+          "id": "XBY-0802",
+          "name_en": "Khop",
+          "name_lo": "ຄອບ",
+          "province_id": "XBY"
+        },
+        {
+          "id": "XBY-0804",
+          "name_en": "Ngeun",
+          "name_lo": "ເງີນ",
+          "province_id": "XBY"
+        },
+        {
+          "id": "XBY-0807",
+          "name_en": "Parklai",
+          "name_lo": "ປາກລາຍ",
+          "province_id": "XBY"
+        },
+        {
+          "id": "XBY-0806",
+          "name_en": "Phiang",
+          "name_lo": "ພຽງ",
+          "province_id": "XBY"
+        },
+        {
+          "id": "XBY-0810",
+          "name_en": "Thongmyxay",
+          "name_lo": "ທົ່ງມີໄຊ",
+          "province_id": "XBY"
+        },
+        {
+          "id": "XBY-0811",
+          "name_en": "Xaisathan",
+          "name_lo": "ໄຊສະຖານ",
+          "province_id": "XBY"
+        },
+        {
+          "id": "XBY-0801",
+          "name_en": "Xayabury",
+          "name_lo": "ໄຊຍະບູລີ",
+          "province_id": "XBY"
+        },
+        {
+          "id": "XBY-0805",
+          "name_en": "Xienghone",
+          "name_lo": "ຊຽງຮ່ອນ",
+          "province_id": "XBY"
+        }
+      ]
+    },
+    {
+      "id": "XKH",
+      "name_en": "Xieng Khouang",
+      "name_lo": "ຊຽງຂວາງ",
+      "code": "XKH",
+      "districts": [
+        {
+          "id": "XKH-0902",
+          "name_en": "Kham",
+          "name_lo": "ຄຳ",
+          "province_id": "XKH"
+        },
+        {
+          "id": "XKH-0904",
+          "name_en": "Khoune",
+          "name_lo": "ຄູນ",
+          "province_id": "XKH"
+        },
+        {
+          "id": "XKH-0905",
+          "name_en": "Morkmay",
+          "name_lo": "ໜອກໄມ",
+          "province_id": "XKH"
+        },
+        {
+          "id": "XKH-0903",
+          "name_en": "Nonghet",
+          "name_lo": "ໜອງແຣດ",
+          "province_id": "XKH"
+        },
+        {
+          "id": "XKH-0901",
+          "name_en": "Pek",
+          "name_lo": "ແປກ",
+          "province_id": "XKH"
+        },
+        {
+          "id": "XKH-0907",
+          "name_en": "Phaxay",
+          "name_lo": "ຜາໄຊ",
+          "province_id": "XKH"
+        },
+        {
+          "id": "XKH-0906",
+          "name_en": "Phoukout",
+          "name_lo": "ພູກູດ",
+          "province_id": "XKH"
+        }
+      ]
+    },
+    {
+      "id": "VTP",
+      "name_en": "Vientiane Province",
+      "name_lo": "ວຽງຈັນ",
+      "code": "VTP",
+      "districts": [
+        {
+          "id": "VTP-1006",
+          "name_en": "Feuang",
+          "name_lo": "ເຟືອງ",
+          "province_id": "VTP"
+        },
+        {
+          "id": "VTP-1009",
+          "name_en": "Hinhurp",
+          "name_lo": "ວຽງຄຳ",
+          "province_id": "VTP"
+        },
+        {
+          "id": "VTP-1004",
+          "name_en": "Kasy",
+          "name_lo": "ກາສີ",
+          "province_id": "VTP"
+        },
+        {
+          "id": "VTP-1003",
+          "name_en": "Keooudom",
+          "name_lo": "ແກ້ວອຸດົມ",
+          "province_id": "VTP"
+        },
+        {
+          "id": "VTP-1008",
+          "name_en": "Mad",
+          "name_lo": "ແມດ",
+          "province_id": "VTP"
+        },
+        {
+          "id": "VTP-1011",
+          "name_en": "Meun",
+          "name_lo": "ໜື່ນ",
+          "province_id": "VTP"
+        },
+        {
+          "id": "VTP-1001",
+          "name_en": "Phonhong",
+          "name_lo": "ໂພນໂຮງ",
+          "province_id": "VTP"
+        },
+        {
+          "id": "VTP-1002",
+          "name_en": "Thoulakhom",
+          "name_lo": "ທຸລະຄົມ",
+          "province_id": "VTP"
+        },
+        {
+          "id": "VTP-1005",
+          "name_en": "Vangvieng",
+          "name_lo": "ວັງວຽງ",
+          "province_id": "VTP"
+        },
+        {
+          "id": "VTP-1010",
+          "name_en": "Viengkham",
+          "name_lo": "ຫີນເຫີບ",
+          "province_id": "VTP"
+        },
+        {
+          "id": "VTP-1007",
+          "name_en": "Xanakharm",
+          "name_lo": "ຊະນະຄາມ",
+          "province_id": "VTP"
+        }
+      ]
+    },
+    {
+      "id": "BLK",
+      "name_en": "Bolikhamsai",
+      "name_lo": "ບໍລິຄຳໄຊ",
+      "code": "BLK",
+      "districts": [
+        {
+          "id": "BLK-1104",
+          "name_en": "Borikhanh",
+          "name_lo": "ບໍລິຄັນ",
+          "province_id": "BLK"
+        },
+        {
+          "id": "BLK-1105",
+          "name_en": "Khamkheuth",
+          "name_lo": "ຄຳເກີດ",
+          "province_id": "BLK"
+        },
+        {
+          "id": "BLK-1103",
+          "name_en": "Pakkading",
+          "name_lo": "ປາກກະດິງ",
+          "province_id": "BLK"
+        },
+        {
+          "id": "BLK-1101",
+          "name_en": "Pakxane",
+          "name_lo": "ປາກຊັນ",
+          "province_id": "BLK"
+        },
+        {
+          "id": "BLK-1102",
+          "name_en": "Thaphabath",
+          "name_lo": "ທ່າພະບາດ",
+          "province_id": "BLK"
+        },
+        {
+          "id": "BLK-1106",
+          "name_en": "Viengthong",
+          "name_lo": "ວຽງທອງ",
+          "province_id": "BLK"
+        },
+        {
+          "id": "BLK-1107",
+          "name_en": "Xaychomphone",
+          "name_lo": "ໄຊຈຳພອນ",
+          "province_id": "BLK"
+        }
+      ]
+    },
+    {
+      "id": "KHM",
+      "name_en": "Khammouane",
+      "name_lo": "ຄຳມ່ວນ",
+      "code": "KHM",
+      "districts": [
+        {
+          "id": "KHM-1206",
+          "name_en": "Boualapha",
+          "name_lo": "ບົວລະພາ",
+          "province_id": "KHM"
+        },
+        {
+          "id": "KHM-1204",
+          "name_en": "Hineboune",
+          "name_lo": "ຫີນບູນ",
+          "province_id": "KHM"
+        },
+        {
+          "id": "KHM-1210",
+          "name_en": "Khounkham",
+          "name_lo": "ຄຼນຄຳ",
+          "province_id": "KHM"
+        },
+        {
+          "id": "KHM-1202",
+          "name_en": "Mahaxay",
+          "name_lo": "ມະຫາໄຊ",
+          "province_id": "KHM"
+        },
+        {
+          "id": "KHM-1207",
+          "name_en": "Nakay",
+          "name_lo": "ນາກາຍ",
+          "province_id": "KHM"
+        },
+        {
+          "id": "KHM-1205",
+          "name_en": "Nhommalath",
+          "name_lo": "ຍົມມະລາດ",
+          "province_id": "KHM"
+        },
+        {
+          "id": "KHM-1203",
+          "name_en": "Nongbok",
+          "name_lo": "ໝອງບົກ",
+          "province_id": "KHM"
+        },
+        {
+          "id": "KHM-1201",
+          "name_en": "Thakhek",
+          "name_lo": "ທ່າແຂກ",
+          "province_id": "KHM"
+        },
+        {
+          "id": "KHM-1209",
+          "name_en": "Xaybuathong",
+          "name_lo": "ໄຊບົວທອງ",
+          "province_id": "KHM"
+        },
+        {
+          "id": "KHM-1208",
+          "name_en": "Xebangfay",
+          "name_lo": "ເຊບັ້ງໄຟ",
+          "province_id": "KHM"
+        }
+      ]
+    },
+    {
+      "id": "SVK",
+      "name_en": "Savannakhet",
+      "name_lo": "ສະຫວັນນະເຂດ",
+      "code": "SVK",
+      "districts": [
+        {
+          "id": "SVK-1313",
+          "name_en": "Assaphone",
+          "name_lo": "ອາດສະພອນ",
+          "province_id": "SVK"
+        },
+        {
+          "id": "SVK-1303",
+          "name_en": "Atsaphangthong",
+          "name_lo": "ອາດສະພັງທອງ",
+          "province_id": "SVK"
+        },
+        {
+          "id": "SVK-1309",
+          "name_en": "Champhone",
+          "name_lo": "ຈຳພອນ",
+          "province_id": "SVK"
+        },
+        {
+          "id": "SVK-1301",
+          "name_en": "Kaysone Phomvihane",
+          "name_lo": "ໄກສອນພົມວິຫານ",
+          "province_id": "SVK"
+        },
+        {
+          "id": "SVK-1306",
+          "name_en": "Nong",
+          "name_lo": "ໜອງ",
+          "province_id": "SVK"
+        },
+        {
+          "id": "SVK-1302",
+          "name_en": "Outhoumphone",
+          "name_lo": "ອຸທຸມພອນ",
+          "province_id": "SVK"
+        },
+        {
+          "id": "SVK-1315",
+          "name_en": "Phalanxay",
+          "name_lo": "ພະລານໄຊ",
+          "province_id": "SVK"
+        },
+        {
+          "id": "SVK-1304",
+          "name_en": "Phine",
+          "name_lo": "ພິນ",
+          "province_id": "SVK"
+        },
+        {
+          "id": "SVK-1305",
+          "name_en": "Seponh",
+          "name_lo": "ເຊໂປນ",
+          "province_id": "SVK"
+        },
+        {
+          "id": "SVK-1308",
+          "name_en": "Songkhone",
+          "name_lo": "ສອງຄອນ",
+          "province_id": "SVK"
+        },
+        {
+          "id": "SVK-1307",
+          "name_en": "Thapangthong",
+          "name_lo": "ທາພັງທອງ",
+          "province_id": "SVK"
+        },
+        {
+          "id": "SVK-1312",
+          "name_en": "Vilabuly",
+          "name_lo": "ວິລະບູລີ",
+          "province_id": "SVK"
+        },
+        {
+          "id": "SVK-1311",
+          "name_en": "Xaybuly",
+          "name_lo": "ໄຊບູລີ",
+          "province_id": "SVK"
+        },
+        {
+          "id": "SVK-1314",
+          "name_en": "Xayphouthong",
+          "name_lo": "ໄຊພູທອງ",
+          "province_id": "SVK"
+        },
+        {
+          "id": "SVK-1310",
+          "name_en": "Xonbuly",
+          "name_lo": "ຊົນບູລີ",
+          "province_id": "SVK"
+        }
+      ]
+    },
+    {
+      "id": "SLV",
+      "name_en": "Saravane",
+      "name_lo": "ສາລະວັນ",
+      "code": "SLV",
+      "districts": [
+        {
+          "id": "SLV-1406",
+          "name_en": "Khongxedone",
+          "name_lo": "ໂຄງເຊໂດນ",
+          "province_id": "SLV"
+        },
+        {
+          "id": "SLV-1404",
+          "name_en": "Lakhonepheng",
+          "name_lo": "ລະຄອນເພງ",
+          "province_id": "SLV"
+        },
+        {
+          "id": "SLV-1407",
+          "name_en": "Lao Ngam",
+          "name_lo": "ເລົ່າງາມ",
+          "province_id": "SLV"
+        },
+        {
+          "id": "SLV-1408",
+          "name_en": "Sa Mouay",
+          "name_lo": "ສະໝ້ວຍ",
+          "province_id": "SLV"
+        },
+        {
+          "id": "SLV-1401",
+          "name_en": "Saravane",
+          "name_lo": "ສາລະວັນ",
+          "province_id": "SLV"
+        },
+        {
+          "id": "SLV-1402",
+          "name_en": "Ta Oy",
+          "name_lo": "ຕະໂອ່ຍ",
+          "province_id": "SLV"
+        },
+        {
+          "id": "SLV-1403",
+          "name_en": "Toumlane",
+          "name_lo": "ຕຸ້ມລານ",
+          "province_id": "SLV"
+        },
+        {
+          "id": "SLV-1405",
+          "name_en": "Vapy",
+          "name_lo": "ວາປີ",
+          "province_id": "SLV"
+        }
+      ]
+    },
+    {
+      "id": "SEK",
+      "name_en": "Sekong",
+      "name_lo": "ເຊກອງ",
+      "code": "SEK",
+      "districts": [
+        {
+          "id": "SEK-1503",
+          "name_en": "Dakcheung",
+          "name_lo": "ດັກຈຶງ",
+          "province_id": "SEK"
+        },
+        {
+          "id": "SEK-1502",
+          "name_en": "Kaleum",
+          "name_lo": "ກະເລິມ",
+          "province_id": "SEK"
+        },
+        {
+          "id": "SEK-1501",
+          "name_en": "Lam Mam",
+          "name_lo": "ລະມາມ",
+          "province_id": "SEK"
+        },
+        {
+          "id": "SEK-1504",
+          "name_en": "Thateng",
+          "name_lo": "ທ່າແຕງ",
+          "province_id": "SEK"
+        }
+      ]
+    },
+    {
+      "id": "CPS",
+      "name_en": "Champasak",
+      "name_lo": "ຈຳປາສັກ",
+      "code": "CPS",
+      "districts": [
+        {
+          "id": "CPS-1603",
+          "name_en": "Bachiangchaleunsook",
+          "name_lo": "ບາຈຽງຈະເລີນສຸກ",
+          "province_id": "CPS"
+        },
+        {
+          "id": "CPS-1607",
+          "name_en": "Champasack",
+          "name_lo": "ຈຳປາສັກ",
+          "province_id": "CPS"
+        },
+        {
+          "id": "CPS-1610",
+          "name_en": "Khong",
+          "name_lo": "ໂຂງ",
+          "province_id": "CPS"
+        },
+        {
+          "id": "CPS-1609",
+          "name_en": "Moonlapamok",
+          "name_lo": "ມູນລະປະໂມກ",
+          "province_id": "CPS"
+        },
+        {
+          "id": "CPS-1601",
+          "name_en": "Pakxe",
+          "name_lo": "ປາກເຊ",
+          "province_id": "CPS"
+        },
+        {
+          "id": "CPS-1604",
+          "name_en": "Pakxong",
+          "name_lo": "ປາກຊ່ອງ",
+          "province_id": "CPS"
+        },
+        {
+          "id": "CPS-1605",
+          "name_en": "Pathoomphone",
+          "name_lo": "ປະທຸມພອນ",
+          "province_id": "CPS"
+        },
+        {
+          "id": "CPS-1606",
+          "name_en": "Phonthong",
+          "name_lo": "ໂພນທອງ",
+          "province_id": "CPS"
+        },
+        {
+          "id": "CPS-1602",
+          "name_en": "Sanasomboon",
+          "name_lo": "ຊະນະສົມບູນ",
+          "province_id": "CPS"
+        },
+        {
+          "id": "CPS-1608",
+          "name_en": "Sukhuma",
+          "name_lo": "ສຸຂຸມາ",
+          "province_id": "CPS"
+        }
+      ]
+    },
+    {
+      "id": "ATP",
+      "name_en": "Attapeu",
+      "name_lo": "ອັດຕະປື",
+      "code": "ATP",
+      "districts": [
+        {
+          "id": "ATP-1705",
+          "name_en": "Phouvong",
+          "name_lo": "ພູວົງ",
+          "province_id": "ATP"
+        },
+        {
+          "id": "ATP-1702",
+          "name_en": "Samakkhixai",
+          "name_lo": "ສາມັກຄີໄຊ",
+          "province_id": "ATP"
+        },
+        {
+          "id": "ATP-1703",
+          "name_en": "Sanamxai",
+          "name_lo": "ສະໜາມໄຊ",
+          "province_id": "ATP"
+        },
+        {
+          "id": "ATP-1704",
+          "name_en": "Sanxai",
+          "name_lo": "ຊານໄຊ",
+          "province_id": "ATP"
+        },
+        {
+          "id": "ATP-1701",
+          "name_en": "Xaysetha",
+          "name_lo": "ໄຊເສດຖາ",
+          "province_id": "ATP"
+        }
+      ]
+    },
+    {
+      "id": "XSB",
+      "name_en": "Xaisomboun",
+      "name_lo": "ໄຊສົມບູນ",
+      "code": "XSB",
+      "districts": [
+        {
+          "id": "XSB-1801",
+          "name_en": "Anouvong",
+          "name_lo": "ອະນຸວົງ",
+          "province_id": "XSB"
+        },
+        {
+          "id": "XSB-1804",
+          "name_en": "Hom",
+          "name_lo": "ຮົ່ມ",
+          "province_id": "XSB"
+        },
+        {
+          "id": "XSB-1803",
+          "name_en": "Longchaeng",
+          "name_lo": "ລ້ອງຊານ",
+          "province_id": "XSB"
+        },
+        {
+          "id": "XSB-1805",
+          "name_en": "Longxan",
+          "name_lo": "ລ້ອງແຈ້ງ",
+          "province_id": "XSB"
+        },
+        {
+          "id": "XSB-1802",
+          "name_en": "Thathom",
+          "name_lo": "ທາໂທມ",
+          "province_id": "XSB"
+        }
+      ]
+    }
+  ]
+}

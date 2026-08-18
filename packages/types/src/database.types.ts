@@ -327,6 +327,59 @@ export type Database = {
           },
         ];
       };
+      lao_districts: {
+        Row: {
+          id: string;
+          name_en: string;
+          name_lo: string;
+          province_id: string;
+          sort_order: number;
+        };
+        Insert: {
+          id: string;
+          name_en: string;
+          name_lo: string;
+          province_id: string;
+          sort_order?: number;
+        };
+        Update: {
+          id?: string;
+          name_en?: string;
+          name_lo?: string;
+          province_id?: string;
+          sort_order?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "lao_districts_province_id_fkey";
+            columns: ["province_id"];
+            isOneToOne: false;
+            referencedRelation: "lao_provinces";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      lao_provinces: {
+        Row: {
+          id: string;
+          name_en: string;
+          name_lo: string;
+          sort_order: number;
+        };
+        Insert: {
+          id: string;
+          name_en: string;
+          name_lo: string;
+          sort_order?: number;
+        };
+        Update: {
+          id?: string;
+          name_en?: string;
+          name_lo?: string;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
       moderation_actions: {
         Row: {
           action: string;
@@ -815,6 +868,41 @@ export type Database = {
             columns: ["owner_user_id"];
             isOneToOne: false;
             referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      verification_upload_intents: {
+        Row: {
+          created_at: string;
+          expires_at: string;
+          mime_type: string;
+          path: string;
+          seller_id: string;
+          verification_type: string;
+        };
+        Insert: {
+          created_at?: string;
+          expires_at: string;
+          mime_type: string;
+          path: string;
+          seller_id: string;
+          verification_type: string;
+        };
+        Update: {
+          created_at?: string;
+          expires_at?: string;
+          mime_type?: string;
+          path?: string;
+          seller_id?: string;
+          verification_type?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "verification_upload_intents_seller_id_fkey";
+            columns: ["seller_id"];
+            isOneToOne: false;
+            referencedRelation: "seller_profiles";
             referencedColumns: ["id"];
           },
         ];

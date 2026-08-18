@@ -1,7 +1,620 @@
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
+import {
+  CreateSellerSchema,
+  SellerSearchSchema,
+  SubmitVerificationSchema,
+  VerificationUploadSchema,
+  type CautionLevel,
+} from "@mekha/types";
+import { computeTrustProfile } from "@mekha/utils";
 
+import { apiError } from "../lib/errors";
+import { createSupabaseClient } from "../lib/supabase";
 import type { ApiEnv } from "../types";
+import { requireAuth } from "../middleware/auth";
 
 export const sellersRoute = new Hono<ApiEnv>();
 
+const ownedSeller = async (context: Context<ApiEnv>) => {
+  const sellerId = context.req.param("id") ?? "";
+  const user = context.get("user");
+  const supabase = createSupabaseClient(context.env);
+  const result = await supabase
+    .from("seller_profiles")
+    .select("id")
+    .eq("id", sellerId)
+    .eq("owner_user_id", user.id)
+    .maybeSingle();
+  return { sellerId, supabase, seller: result.data, error: result.error };
+};
+
 sellersRoute.get("/", (context) => context.json({ data: [] }));
+
+sellersRoute.post("/", requireAuth, async (context) => {
+  const parsed = CreateSellerSchema.safeParse(
+    await context.req.json().catch(() => null),
+  );
+  if (!parsed.success)
+    return apiError(context, 400, "BAD_REQUEST", "ຂໍ້ມູນຮ້ານຄ້າບໍ່ຖືກຕ້ອງ", {
+      fields: parsed.error.flatten().fieldErrors,
+    });
+  const user = context.get("user");
+  if (user.phone !== parsed.data.phone)
+    return apiError(
+      context,
+      403,
+      "PHONE_MISMATCH",
+      "ເບີໂທບໍ່ກົງກັບເບີທີ່ຢືນຢັນ",
+    );
+  const supabase = createSupabaseClient(context.env);
+  const existing = await supabase
+    .from("seller_profiles")
+    .select("id")
+    .eq("owner_user_id", user.id)
+    .maybeSingle();
+  if (existing.error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ບໍ່ສາມາດກວດສອບບັນຊີໄດ້");
+  if (existing.data)
+    return apiError(context, 409, "SELLER_EXISTS", "ບັນຊີນີ້ມີຮ້ານຄ້າແລ້ວ");
+  const { data: location } = await supabase
+    .from("lao_districts")
+    .select("id,province_id")
+    .eq("id", parsed.data.district)
+    .eq("province_id", parsed.data.province)
+    .maybeSingle();
+  if (!location)
+    return apiError(
+      context,
+      400,
+      "INVALID_LOCATION",
+      "ແຂວງ ຫຼື ເມືອງບໍ່ຖືກຕ້ອງ",
+    );
+  const upsertUser = await supabase
+    .from("users")
+    .upsert(
+      { id: user.id, phone: user.phone, role: "seller" },
+      { onConflict: "id" },
+    );
+  if (upsertUser.error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ບໍ່ສາມາດສ້າງໂປຣໄຟລ໌ໄດ້");
+  const { data: seller, error } = await supabase
+    .from("seller_profiles")
+    .insert({
+      ...parsed.data,
+      business_name: parsed.data.business_name || parsed.data.business_name_lao,
+      owner_user_id: user.id,
+      verification_status: "unverified",
+    })
+    .select()
+    .single();
+  if (error)
+    return apiError(
+      context,
+      error.code === "23505" ? 409 : 500,
+      error.code === "23505" ? "SELLER_EXISTS" : "INTERNAL_ERROR",
+      error.code === "23505"
+        ? "ບັນຊີນີ້ມີຮ້ານຄ້າແລ້ວ"
+        : "ບໍ່ສາມາດສ້າງຮ້ານຄ້າໄດ້",
+    );
+  const related = await Promise.all([
+    supabase
+      .from("subscriptions")
+      .insert({ seller_id: seller.id, plan: "free", status: "active" }),
+    supabase.from("audit_logs").insert({
+      actor_id: user.id,
+      event: "seller.created",
+      entity_type: "seller_profile",
+      entity_id: seller.id,
+      metadata: { source: "phone_registration" },
+    }),
+  ]);
+  if (related.some(({ error: relatedError }) => relatedError)) {
+    await supabase.from("seller_profiles").delete().eq("id", seller.id);
+    console.error(
+      JSON.stringify({
+        event: "seller_registration_related_write_failed",
+        sellerId: seller.id,
+      }),
+    );
+    return apiError(context, 500, "INTERNAL_ERROR", "ບໍ່ສາມາດສ້າງຮ້ານຄ້າໄດ້");
+  }
+  return context.json({ data: seller }, 201);
+});
+
+sellersRoute.get("/me", requireAuth, async (context) => {
+  const supabase = createSupabaseClient(context.env);
+  const { data, error } = await supabase
+    .from("seller_profiles")
+    .select("id,business_name_lao,verification_status")
+    .eq("owner_user_id", context.get("user").id)
+    .maybeSingle();
+  if (error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ໂຫລດຮ້ານຄ້າບໍ່ສຳເລັດ");
+  if (!data) return apiError(context, 404, "NOT_FOUND", "ບໍ່ພົບຮ້ານຄ້າ");
+  return context.json({ data });
+});
+
+sellersRoute.post("/:id/verification-upload", requireAuth, async (context) => {
+  const parsed = VerificationUploadSchema.safeParse(
+    await context.req.json().catch(() => null),
+  );
+  if (!parsed.success)
+    return apiError(context, 400, "BAD_REQUEST", "ປະເພດໄຟລ໌ບໍ່ຖືກຕ້ອງ");
+  const {
+    sellerId,
+    supabase,
+    seller,
+    error: ownerError,
+  } = await ownedSeller(context);
+  if (ownerError)
+    return apiError(context, 500, "INTERNAL_ERROR", "ກວດສອບຮ້ານຄ້າບໍ່ສຳເລັດ");
+  if (!seller)
+    return apiError(context, 403, "FORBIDDEN", "ທ່ານບໍ່ມີສິດຈັດການຮ້ານນີ້");
+  const extension =
+    parsed.data.mime_type === "image/jpeg"
+      ? "jpg"
+      : parsed.data.mime_type === "image/png"
+        ? "png"
+        : "pdf";
+  const path = `${sellerId}/${crypto.randomUUID()}-${parsed.data.verification_type}.${extension}`;
+  const { data, error } = await supabase.storage
+    .from("verification-docs")
+    .createSignedUploadUrl(path);
+  if (error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ສ້າງລິ້ງອັບໂຫລດບໍ່ສຳເລັດ");
+  const expiresAt = new Date(Date.now() + 15 * 60_000).toISOString();
+  const intent = await supabase.from("verification_upload_intents").insert({
+    path,
+    seller_id: sellerId,
+    verification_type: parsed.data.verification_type,
+    mime_type: parsed.data.mime_type,
+    expires_at: expiresAt,
+  });
+  if (intent.error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ສ້າງການອັບໂຫລດບໍ່ສຳເລັດ");
+  return context.json({
+    upload_url: data.signedUrl,
+    token: data.token,
+    path,
+    expires_at: expiresAt,
+  });
+});
+
+sellersRoute.post("/:id/verification", requireAuth, async (context) => {
+  const parsed = SubmitVerificationSchema.safeParse(
+    await context.req.json().catch(() => null),
+  );
+  if (!parsed.success)
+    return apiError(context, 400, "BAD_REQUEST", "ຂໍ້ມູນເອກະສານບໍ່ຖືກຕ້ອງ");
+  const {
+    sellerId,
+    supabase,
+    seller,
+    error: ownerError,
+  } = await ownedSeller(context);
+  if (ownerError)
+    return apiError(context, 500, "INTERNAL_ERROR", "ກວດສອບຮ້ານຄ້າບໍ່ສຳເລັດ");
+  if (!seller)
+    return apiError(context, 403, "FORBIDDEN", "ທ່ານບໍ່ມີສິດຈັດການຮ້ານນີ້");
+  const pathPattern = new RegExp(
+    `^${sellerId}/[0-9a-f-]{36}-${parsed.data.verification_type}\\.(jpg|png|pdf)$`,
+  );
+  if (!pathPattern.test(parsed.data.document_path))
+    return apiError(context, 400, "BAD_REQUEST", "ທີ່ຢູ່ເອກະສານບໍ່ຖືກຕ້ອງ");
+  const now = new Date().toISOString();
+  const { data: intent, error: intentError } = await supabase
+    .from("verification_upload_intents")
+    .update({ expires_at: now })
+    .eq("path", parsed.data.document_path)
+    .eq("seller_id", sellerId)
+    .eq("verification_type", parsed.data.verification_type)
+    .gt("expires_at", now)
+    .select("path")
+    .maybeSingle();
+  if (intentError)
+    return apiError(
+      context,
+      500,
+      "INTERNAL_ERROR",
+      "ກວດສອບການອັບໂຫລດບໍ່ສຳເລັດ",
+    );
+  if (!intent)
+    return apiError(context, 400, "BAD_REQUEST", "ລິ້ງອັບໂຫລດໝົດອາຍຸແລ້ວ");
+  const downloaded = await supabase.storage
+    .from("verification-docs")
+    .download(parsed.data.document_path);
+  if (downloaded.error || !downloaded.data)
+    return apiError(context, 400, "BAD_REQUEST", "ບໍ່ພົບໄຟລ໌ທີ່ອັບໂຫລດ");
+  if (downloaded.data.size > 10 * 1024 * 1024)
+    return apiError(context, 400, "BAD_REQUEST", "ໄຟລ໌ໃຫຍ່ເກີນ 10MB");
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    await downloaded.data.arrayBuffer(),
+  );
+  const serverHash = Array.from(new Uint8Array(digest), (byte) =>
+    byte.toString(16).padStart(2, "0"),
+  ).join("");
+  if (serverHash !== parsed.data.file_hash) {
+    await supabase.storage
+      .from("verification-docs")
+      .remove([parsed.data.document_path]);
+    return apiError(
+      context,
+      422,
+      "UNPROCESSABLE_ENTITY",
+      "ໄຟລ໌ຖືກປ່ຽນແປງ ກະລຸນາອັບໂຫລດໃໝ່",
+    );
+  }
+  const { data: verification, error } = await supabase
+    .from("seller_verifications")
+    .insert({
+      seller_id: sellerId,
+      verification_type: parsed.data.verification_type,
+      document_paths: [parsed.data.document_path],
+      status: "pending",
+      submitted_data: {
+        file_hash: serverHash,
+        notes: parsed.data.notes ?? null,
+      },
+    })
+    .select("id,status,created_at")
+    .single();
+  if (error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ບັນທຶກເອກະສານບໍ່ສຳເລັດ");
+  const audit = await supabase.from("audit_logs").insert({
+    actor_id: context.get("user").id,
+    event: "seller.verification_submitted",
+    entity_type: "seller_verification",
+    entity_id: verification.id,
+    metadata: {
+      seller_id: sellerId,
+      verification_type: parsed.data.verification_type,
+      file_hash: serverHash,
+    },
+  });
+  if (audit.error) {
+    await supabase
+      .from("seller_verifications")
+      .delete()
+      .eq("id", verification.id);
+    return apiError(context, 500, "INTERNAL_ERROR", "ບັນທຶກປະຫວັດບໍ່ສຳເລັດ");
+  }
+  await supabase
+    .from("verification_upload_intents")
+    .delete()
+    .eq("path", parsed.data.document_path);
+  return context.json(
+    { verification_id: verification.id, status: verification.status },
+    201,
+  );
+});
+
+sellersRoute.get("/:id/verifications", requireAuth, async (context) => {
+  const {
+    sellerId,
+    supabase,
+    seller,
+    error: ownerError,
+  } = await ownedSeller(context);
+  if (ownerError)
+    return apiError(context, 500, "INTERNAL_ERROR", "ກວດສອບຮ້ານຄ້າບໍ່ສຳເລັດ");
+  if (!seller)
+    return apiError(context, 403, "FORBIDDEN", "ທ່ານບໍ່ມີສິດເບິ່ງຂໍ້ມູນນີ້");
+  const { data, error } = await supabase
+    .from("seller_verifications")
+    .select("id,verification_type,status,reviewer_notes,created_at")
+    .eq("seller_id", sellerId)
+    .order("created_at", { ascending: false });
+  if (error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ໂຫລດສະຖານະບໍ່ສຳເລັດ");
+  return context.json({ data });
+});
+
+const profileFields =
+  "id,business_name,business_name_lao,province,logo_url,verification_status" as const;
+
+const phoneCandidates = (value: string) => {
+  const digits = value.replace(/\D/g, "");
+  const laoDigits = digits.startsWith("856") ? `0${digits.slice(3)}` : digits;
+  const internationalDigits = laoDigits.startsWith("0")
+    ? `856${laoDigits.slice(1)}`
+    : laoDigits;
+  return [...new Set([value.trim(), laoDigits, `+${internationalDigits}`])];
+};
+
+sellersRoute.get("/search", async (context) => {
+  const parsed = SellerSearchSchema.safeParse(context.req.query());
+  if (!parsed.success) {
+    return apiError(context, 400, "BAD_REQUEST", "Invalid seller search", {
+      fields: parsed.error.flatten().fieldErrors,
+    });
+  }
+
+  const { q, type, limit } = parsed.data;
+  const literalPattern = q.replace(/[\\%_]/g, "\\$&");
+  const supabase = createSupabaseClient(context.env);
+  const baseQuery = () =>
+    supabase
+      .from("seller_profiles")
+      .select(profileFields)
+      .neq("verification_status", "suspended")
+      .limit(limit);
+
+  const profileResponses =
+    type === "shop_name"
+      ? await Promise.all([
+          baseQuery().ilike("business_name", `%${literalPattern}%`),
+          baseQuery().ilike("business_name_lao", `%${literalPattern}%`),
+        ])
+      : [
+          type === "phone"
+            ? await baseQuery().in("phone", phoneCandidates(q))
+            : await baseQuery().eq("etrust_id", q),
+        ];
+
+  const failedProfileQuery = profileResponses.find(({ error }) => error);
+  if (failedProfileQuery?.error) {
+    console.error(
+      JSON.stringify({
+        level: "error",
+        event: "seller_search_failed",
+        requestId: context.get("requestId"),
+        message: failedProfileQuery.error.message,
+      }),
+    );
+    return apiError(context, 500, "INTERNAL_ERROR", "Seller search failed");
+  }
+
+  const profiles = Array.from(
+    new Map(
+      profileResponses
+        .flatMap(({ data }) => data ?? [])
+        .map((profile) => [profile.id, profile]),
+    ).values(),
+  ).slice(0, limit);
+
+  if (profiles.length === 0) return context.json({ data: [] });
+
+  const sellerIds = profiles.map(({ id }) => id);
+  const [ordersResponse, risksResponse] = await Promise.all([
+    supabase
+      .from("orders")
+      .select("seller_id")
+      .in("seller_id", sellerIds)
+      .in("status", ["delivered", "settled"]),
+    supabase
+      .from("risk_signals")
+      .select("seller_id,severity")
+      .in("seller_id", sellerIds)
+      .eq("is_active", true)
+      .eq("status", "active"),
+  ]);
+
+  if (ordersResponse.error || risksResponse.error) {
+    return apiError(context, 500, "INTERNAL_ERROR", "Seller trust data failed");
+  }
+
+  const orderCounts = new Map<string, number>();
+  for (const order of ordersResponse.data ?? []) {
+    orderCounts.set(
+      order.seller_id,
+      (orderCounts.get(order.seller_id) ?? 0) + 1,
+    );
+  }
+  const caution = new Map<string, CautionLevel>();
+  for (const risk of risksResponse.data ?? []) {
+    const next: CautionLevel =
+      risk.severity === "critical"
+        ? "high"
+        : risk.severity === "warning"
+          ? "medium"
+          : "low";
+    const current = caution.get(risk.seller_id);
+    if (
+      !current ||
+      next === "high" ||
+      (next === "medium" && current === "low")
+    ) {
+      caution.set(risk.seller_id, next);
+    }
+  }
+
+  return context.json({
+    data: profiles.map((profile) => ({
+      ...profile,
+      verified_order_count: orderCounts.get(profile.id) ?? 0,
+      caution_level: caution.get(profile.id) ?? "insufficient_information",
+    })),
+  });
+});
+
+sellersRoute.get("/:id", async (context) => {
+  const sellerId = context.req.param("id");
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      sellerId,
+    )
+  ) {
+    return apiError(context, 404, "NOT_FOUND", "Seller not found");
+  }
+
+  const supabase = createSupabaseClient(context.env);
+  const profileResponse = await supabase
+    .from("seller_profiles")
+    .select("*")
+    .eq("id", sellerId)
+    .neq("verification_status", "suspended")
+    .maybeSingle();
+
+  if (profileResponse.error) {
+    return apiError(context, 500, "INTERNAL_ERROR", "Seller profile failed");
+  }
+  if (!profileResponse.data) {
+    return apiError(context, 404, "NOT_FOUND", "Seller not found");
+  }
+
+  const sevenDaysAgo = new Date(Date.now() - 7 * 86_400_000).toISOString();
+  const [
+    verifications,
+    identifiers,
+    verifiedOrders,
+    totalOrders,
+    disputes,
+    ratings,
+    unresolvedReports,
+    totalReports,
+    risks,
+    profileChanges,
+    verifiedReviews,
+    unverifiedReviews,
+  ] = await Promise.all([
+    supabase.from("seller_verifications").select("*").eq("seller_id", sellerId),
+    supabase.from("seller_identifiers").select("*").eq("seller_id", sellerId),
+    supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("seller_id", sellerId)
+      .in("status", ["delivered", "settled"]),
+    supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("seller_id", sellerId),
+    supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("seller_id", sellerId)
+      .eq("status", "disputed"),
+    supabase
+      .from("reviews")
+      .select("rating_overall")
+      .eq("seller_id", sellerId)
+      .eq("status", "active")
+      .eq("verified_transaction", true)
+      .not("rating_overall", "is", null)
+      .limit(1000),
+    supabase
+      .from("reports")
+      .select("id", { count: "exact", head: true })
+      .eq("seller_id", sellerId)
+      .in("status", ["pending", "under_review"]),
+    supabase
+      .from("reports")
+      .select("id", { count: "exact", head: true })
+      .eq("seller_id", sellerId),
+    supabase
+      .from("risk_signals")
+      .select("*")
+      .eq("seller_id", sellerId)
+      .eq("is_active", true)
+      .eq("status", "active"),
+    supabase
+      .from("audit_logs")
+      .select("id", { count: "exact", head: true })
+      .eq("entity_type", "seller_profile")
+      .eq("entity_id", sellerId)
+      .gte("created_at", sevenDaysAgo),
+    supabase
+      .from("reviews")
+      .select("id,rating_overall,review_text,verified_transaction,created_at")
+      .eq("seller_id", sellerId)
+      .eq("status", "active")
+      .eq("verified_transaction", true)
+      .order("created_at", { ascending: false })
+      .limit(5),
+    supabase
+      .from("reviews")
+      .select("id,rating_overall,review_text,verified_transaction,created_at")
+      .eq("seller_id", sellerId)
+      .eq("status", "active")
+      .eq("verified_transaction", false)
+      .order("created_at", { ascending: false })
+      .limit(5),
+  ]);
+  if (
+    verifications.error ||
+    identifiers.error ||
+    verifiedOrders.error ||
+    totalOrders.error ||
+    disputes.error ||
+    ratings.error ||
+    unresolvedReports.error ||
+    totalReports.error ||
+    risks.error ||
+    profileChanges.error ||
+    verifiedReviews.error ||
+    unverifiedReviews.error
+  ) {
+    return apiError(context, 500, "INTERNAL_ERROR", "Seller trust data failed");
+  }
+
+  const reviewRatings = (ratings.data ?? []).flatMap(({ rating_overall }) =>
+    rating_overall === null ? [] : [rating_overall],
+  );
+  const engine = computeTrustProfile({
+    seller: profileResponse.data,
+    verifications: verifications.data ?? [],
+    identifiers: identifiers.data ?? [],
+    orderStats: {
+      total: totalOrders.count ?? 0,
+      verified: verifiedOrders.count ?? 0,
+      dispute_count: disputes.count ?? 0,
+      on_time_count: null,
+    },
+    reviewStats: {
+      count: reviewRatings.length,
+      avg_rating: reviewRatings.length
+        ? reviewRatings.reduce((sum, rating) => sum + rating, 0) /
+          reviewRatings.length
+        : 0,
+    },
+    reportStats: {
+      unresolved: unresolvedReports.count ?? 0,
+      total: totalReports.count ?? 0,
+    },
+    riskSignals: risks.data ?? [],
+    profileChangeCount: profileChanges.count ?? 0,
+    evaluatedAt: new Date().toISOString(),
+  });
+
+  const {
+    id,
+    business_name,
+    business_name_lao,
+    description,
+    province,
+    district,
+    logo_url,
+    facebook_url,
+    tiktok_url,
+    created_at,
+  } = profileResponse.data;
+
+  return context.json({
+    data: {
+      id,
+      business_name,
+      business_name_lao,
+      description,
+      province,
+      district,
+      logo_url,
+      facebook_url,
+      tiktok_url,
+      created_at,
+      verification_status: engine.verification_status,
+      caution_level: engine.caution_level,
+      trust_signals: engine.signals,
+      ...engine.stats,
+      reviews: [
+        ...(verifiedReviews.data ?? []),
+        ...(unverifiedReviews.data ?? []),
+      ].map((review) => ({
+        id: review.id,
+        rating: review.rating_overall ?? 0,
+        review_text: review.review_text,
+        verified_transaction: review.verified_transaction,
+        created_at: review.created_at,
+      })),
+    },
+  });
+});

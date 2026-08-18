@@ -1,0 +1,11 @@
+# Copy this file to .setup-inputs.local and fill values that require owner access.
+# Never commit .setup-inputs.local or paste these values into source files.
+
+# GitHub Actions / Cloudflare deployments
+CLOUDFLARE_API_TOKEN=
+CLOUDFLARE_ACCOUNT_ID=
+
+# GitHub Actions / hosted Supabase migrations
+SUPABASE_ACCESS_TOKEN=
+SUPABASE_PROJECT_ID=mjgcivpsboccmstphyox
+SUPABASE_DB_PASSWORD=
