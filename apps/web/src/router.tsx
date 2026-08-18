@@ -18,6 +18,8 @@ import { SellerDashboardPage } from "./pages/dashboard";
 import { ProductFormPage, ProductListPage } from "./pages/products";
 import { OrderEntryPage } from "./pages/order-entry";
 import { DataExportPage } from "./pages/data-export";
+import { SellerSectionPage } from "./pages/seller-section";
+import { ManualOrderPage } from "./pages/manual-order";
 
 export const router = createBrowserRouter([
   {
@@ -38,6 +40,15 @@ export const router = createBrowserRouter([
       { path: "/dashboard/products/:id", element: <ProductFormPage /> },
       { path: "/dashboard/orders/new", element: <OrderEntryPage /> },
       { path: "/dashboard/settings/export", element: <DataExportPage /> },
+      { path: "/dashboard/orders", element: <SellerSectionPage /> },
+      { path: "/dashboard/orders/new", element: <ManualOrderPage /> },
+      { path: "/dashboard/orders/:id", element: <SellerSectionPage /> },
+      { path: "/dashboard/products", element: <SellerSectionPage /> },
+      { path: "/dashboard/products/new", element: <SellerSectionPage /> },
+      { path: "/dashboard/products/:id", element: <SellerSectionPage /> },
+      { path: "/dashboard/finance", element: <SellerSectionPage /> },
+      { path: "/dashboard/trust", element: <SellerSectionPage /> },
+      { path: "/dashboard/settings", element: <SellerSectionPage /> },
       { path: "/admin/verifications", element: <AdminVerificationsPage /> },
       {
         path: "/register/verification",
