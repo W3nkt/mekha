@@ -1,0 +1,11 @@
+const api = (process.env.SMOKE_API_URL || "https://mekha-api.wen-kt2020.workers.dev").replace(/\/$/, "");
+const web = (process.env.SMOKE_WEB_URL || "https://mekha.satsx.net").replace(/\/$/, "");
+const checks = [];
+const check = async (name, fn) => { try { await fn(); checks.push(["PASS", name]); } catch (error) { checks.push(["FAIL", `${name}: ${error.message}`]); } };
+const expect = (condition, message) => { if (!condition) throw new Error(message); };
+for (const route of ["/dashboard", "/dashboard/orders", "/dashboard/orders/new", "/dashboard/finance", "/dashboard/settings/export"]) await check(`seller route ${route}`, async () => { const response = await fetch(`${web}${route}`); expect(response.ok, `HTTP ${response.status}`); });
+await check("anonymous finance import is rejected", async () => { const response = await fetch(`${api}/v1/finance/settlements`, { method: "POST", body: "tracking_number,recipient_name,delivery_date,cod_amount,status\nANS-X,Noy,2026-01-01,1,delivered" }); expect([401, 403, 404].includes(response.status), `HTTP ${response.status}`); });
+await check("Facebook webhook rejects unsigned payload", async () => { const response = await fetch(`${api}/v1/webhooks/facebook`, { method: "POST", body: "{}" }); expect([403, 404].includes(response.status), `HTTP ${response.status}`); });
+await check("browser HTML contains no service-role secret", async () => { const html = await (await fetch(`${web}/dashboard`)).text(); expect(!html.includes("SUPABASE_SERVICE_ROLE_KEY"), "secret found"); });
+for (const [status, name] of checks) console.log(`${status.padEnd(4)} ${name}`);
+if (checks.some(([status]) => status === "FAIL")) process.exitCode = 1;

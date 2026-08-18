@@ -13,6 +13,7 @@
     "test": "turbo test",
     "lint": "turbo lint",
     "type-check": "turbo type-check",
+    "smoke:sprint2": "node scripts/sprint2-smoke.mjs",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
     "db:start": "supabase start",
     "db:status": "supabase status",
