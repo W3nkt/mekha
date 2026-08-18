@@ -1,6 +1,7 @@
 import { Hono, type Context } from "hono";
 import {
   CreateSellerSchema,
+  SellerExportSchema,
   SellerSearchSchema,
   SubmitVerificationSchema,
   UpdateSellerSchema,
@@ -10,6 +11,7 @@ import {
 import { computeTrustProfile } from "@mekha/utils";
 
 import { apiError } from "../lib/errors";
+import { buildCsv, formatDateDMY } from "../lib/csv";
 import { createSupabaseClient } from "../lib/supabase";
 import type { ApiEnv } from "../types";
 import { requireAuth } from "../middleware/auth";
@@ -429,6 +431,258 @@ sellersRoute.get("/:id/verifications", requireAuth, async (context) => {
   if (error)
     return apiError(context, 500, "INTERNAL_ERROR", "ໂຫລດສະຖານະບໍ່ສຳເລັດ");
   return context.json({ data });
+});
+
+sellersRoute.get("/:id/export", requireAuth, async (context) => {
+  const parsed = SellerExportSchema.safeParse(context.req.query());
+  if (!parsed.success)
+    return apiError(context, 400, "BAD_REQUEST", "ຄຳຮ້ອງຂໍບໍ່ຖືກຕ້ອງ");
+  const sellerId = context.req.param("id");
+  const supabase = createSupabaseClient(context.env);
+  const { data: seller, error: sellerError } = await supabase
+    .from("seller_profiles")
+    .select("id,business_name,business_name_lao")
+    .eq("id", sellerId)
+    .eq("owner_user_id", context.get("user").id)
+    .maybeSingle();
+  if (sellerError)
+    return apiError(context, 500, "INTERNAL_ERROR", "ກວດສອບຮ້ານຄ້າບໍ່ສຳເລັດ");
+  if (!seller)
+    return apiError(context, 403, "FORBIDDEN", "ທ່ານບໍ່ມີສິດດາວໂຫລດຂໍ້ມູນນີ້");
+
+  const { from, to } = parsed.data;
+  const fromIso = from ? `${from}T00:00:00.000Z` : undefined;
+  const toIso = to ? `${to}T23:59:59.999Z` : undefined;
+  const todayDmy = formatDateDMY(new Date().toISOString());
+  const rangeDmy = `${from ? formatDateDMY(fromIso!) : "—"} - ${to ? formatDateDMY(toIso!) : "—"}`;
+  const sellerName = seller.business_name_lao || seller.business_name;
+
+  if (parsed.data.type === "orders") {
+    let query = supabase
+      .from("orders")
+      .select(
+        "friendly_id,created_at,updated_at,amount,delivery_fee,payment_method,status,tracking_number,customers(phone),order_items(product_name,quantity,unit_price)",
+      )
+      .eq("seller_id", seller.id)
+      .order("created_at", { ascending: true });
+    if (fromIso) query = query.gte("created_at", fromIso);
+    if (toIso) query = query.lte("created_at", toIso);
+    const { data, error } = await query;
+    if (error)
+      return apiError(context, 500, "INTERNAL_ERROR", "ດຶງຂໍ້ມູນຄຳສັ່ງບໍ່ສຳເລັດ");
+
+    const rows = (data ?? []).flatMap((order) =>
+      (order.order_items.length > 0 ? order.order_items : [null]).map(
+        (item) => [
+          order.friendly_id,
+          formatDateDMY(order.created_at),
+          order.customers?.phone ?? "",
+          item?.product_name ?? "",
+          item?.quantity ?? "",
+          item?.unit_price ?? "",
+          order.amount,
+          order.delivery_fee,
+          order.payment_method ?? "",
+          order.status,
+          order.tracking_number ?? "",
+          order.status === "settled" ? formatDateDMY(order.updated_at) : "",
+          order.amount - order.delivery_fee,
+        ],
+      ),
+    );
+    const csv = buildCsv(
+      [
+        "order_id",
+        "date",
+        "customer_phone",
+        "product_name",
+        "quantity",
+        "unit_price",
+        "total_amount",
+        "shipping_fee",
+        "payment_method",
+        "status",
+        "tracking_number",
+        "settlement_date",
+        "net_amount",
+      ],
+      rows,
+      [
+        `# ລາຍງານທຸລະກຳ KhaiDee / ຂາຍດີ`,
+        `# ຮ້ານ: ${sellerName}`,
+        `# ຊ່ວງວັນທີ: ${rangeDmy}`,
+        `# ສ້າງວັນທີ: ${todayDmy}`,
+      ],
+    );
+    return context.body(`\uFEFF${csv}`, 200, {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": `attachment; filename="khaidee-orders-${from ?? "all"}_${to ?? "all"}.csv"`,
+    });
+  }
+
+  if (parsed.data.type === "monthly") {
+    let query = supabase
+      .from("orders")
+      .select("created_at,amount,delivery_fee,status,order_items(product_id,quantity)")
+      .eq("seller_id", seller.id);
+    if (fromIso) query = query.gte("created_at", fromIso);
+    if (toIso) query = query.lte("created_at", toIso);
+    const { data: orders, error } = await query;
+    if (error)
+      return apiError(context, 500, "INTERNAL_ERROR", "ດຶງຂໍ້ມູນຄຳສັ່ງບໍ່ສຳເລັດ");
+
+    const productIds = [
+      ...new Set(
+        (orders ?? []).flatMap((order) =>
+          order.order_items.flatMap((item) =>
+            item.product_id ? [item.product_id] : [],
+          ),
+        ),
+      ),
+    ];
+    const costByProduct = new Map<string, number>();
+    if (productIds.length > 0) {
+      const { data: products, error: productsError } = await supabase
+        .from("products")
+        .select("id,cost")
+        .in("id", productIds);
+      if (productsError)
+        return apiError(context, 500, "INTERNAL_ERROR", "ດຶງຂໍ້ມູນສິນຄ້າບໍ່ສຳເລັດ");
+      for (const product of products ?? [])
+        costByProduct.set(product.id, product.cost ?? 0);
+    }
+
+    type MonthAgg = {
+      total_orders: number;
+      total_revenue: number;
+      total_cogs: number;
+      total_shipping: number;
+      returned_orders: number;
+      disputed_orders: number;
+    };
+    const months = new Map<string, MonthAgg>();
+    for (const order of orders ?? []) {
+      const month = order.created_at.slice(0, 7);
+      const agg = months.get(month) ?? {
+        total_orders: 0,
+        total_revenue: 0,
+        total_cogs: 0,
+        total_shipping: 0,
+        returned_orders: 0,
+        disputed_orders: 0,
+      };
+      agg.total_orders += 1;
+      if (order.status === "returned") agg.returned_orders += 1;
+      if (order.status === "disputed") agg.disputed_orders += 1;
+      if (order.status === "settled") {
+        agg.total_revenue += order.amount;
+        agg.total_shipping += order.delivery_fee;
+        for (const item of order.order_items)
+          agg.total_cogs +=
+            (item.product_id ? costByProduct.get(item.product_id) ?? 0 : 0) *
+            item.quantity;
+      }
+      months.set(month, agg);
+    }
+
+    const rows = [...months.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([month, agg]) => [
+        month,
+        agg.total_orders,
+        agg.total_revenue,
+        agg.total_cogs,
+        agg.total_shipping,
+        agg.total_revenue - agg.total_cogs - agg.total_shipping,
+        agg.returned_orders,
+        agg.disputed_orders,
+      ]);
+    const csv = buildCsv(
+      [
+        "month",
+        "total_orders",
+        "total_revenue",
+        "total_cogs",
+        "total_shipping",
+        "net_profit",
+        "returned_orders",
+        "disputed_orders",
+      ],
+      rows,
+    );
+    return context.body(`\uFEFF${csv}`, 200, {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": `attachment; filename="khaidee-monthly-${from ?? "all"}_${to ?? "all"}.csv"`,
+    });
+  }
+
+  const [customersResponse, ordersResponse, placesResponse] =
+    await Promise.all([
+      supabase
+        .from("customers")
+        .select("id,phone,name,province,district,order_count")
+        .eq("seller_id", seller.id),
+      supabase
+        .from("orders")
+        .select("customer_id,amount,created_at")
+        .eq("seller_id", seller.id)
+        .not("customer_id", "is", null),
+      Promise.all([
+        supabase.from("lao_provinces").select("id,name_lo"),
+        supabase.from("lao_districts").select("id,name_lo"),
+      ]),
+    ]);
+  if (customersResponse.error || ordersResponse.error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ດຶງຂໍ້ມູນລູກຄ້າບໍ່ສຳເລັດ");
+  const [provincesResponse, districtsResponse] = placesResponse;
+  const provinceNames = new Map(
+    (provincesResponse.data ?? []).map((row) => [row.id, row.name_lo]),
+  );
+  const districtNames = new Map(
+    (districtsResponse.data ?? []).map((row) => [row.id, row.name_lo]),
+  );
+
+  const byCustomer = new Map<string, { total: number; last: string }>();
+  for (const order of ordersResponse.data ?? []) {
+    const key = order.customer_id!;
+    const current = byCustomer.get(key);
+    byCustomer.set(key, {
+      total: (current?.total ?? 0) + order.amount,
+      last:
+        !current || order.created_at > current.last
+          ? order.created_at
+          : current.last,
+    });
+  }
+
+  const rows = (customersResponse.data ?? []).map((customer) => {
+    const stats = byCustomer.get(customer.id);
+    return [
+      customer.phone,
+      customer.name ?? "",
+      customer.province ? provinceNames.get(customer.province) ?? customer.province : "",
+      customer.district ? districtNames.get(customer.district) ?? customer.district : "",
+      customer.order_count,
+      stats?.total ?? 0,
+      stats ? formatDateDMY(stats.last) : "",
+    ];
+  });
+  const csv = buildCsv(
+    [
+      "customer_phone",
+      "customer_name",
+      "province",
+      "district",
+      "order_count",
+      "total_spent",
+      "last_order_date",
+    ],
+    rows,
+  );
+  return context.body(`\uFEFF${csv}`, 200, {
+    "Content-Type": "text/csv; charset=utf-8",
+    "Content-Disposition": `attachment; filename="khaidee-customers-${from ?? "all"}_${to ?? "all"}.csv"`,
+  });
 });
 
 const profileFields =

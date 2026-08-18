@@ -145,6 +145,18 @@ describe("Mekha API", () => {
     });
   });
 
+  it("rejects a data export request without a token", async () => {
+    const response = await request(
+      "/v1/sellers/some-id/export?type=orders",
+      createEnv(),
+    );
+
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
+  });
+
   it("validates public seller search parameters", async () => {
     const response = await request(
       "/v1/sellers/search?q=&type=unknown",

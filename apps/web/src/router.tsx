@@ -17,6 +17,7 @@ import { AdminVerificationsPage } from "./pages/admin-verifications";
 import { SellerDashboardPage } from "./pages/dashboard";
 import { ProductFormPage, ProductListPage } from "./pages/products";
 import { OrderEntryPage } from "./pages/order-entry";
+import { DataExportPage } from "./pages/data-export";
 
 export const router = createBrowserRouter([
   {
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
       { path: "/dashboard/products/new", element: <ProductFormPage /> },
       { path: "/dashboard/products/:id", element: <ProductFormPage /> },
       { path: "/dashboard/orders/new", element: <OrderEntryPage /> },
+      { path: "/dashboard/settings/export", element: <DataExportPage /> },
       { path: "/admin/verifications", element: <AdminVerificationsPage /> },
       {
         path: "/register/verification",
