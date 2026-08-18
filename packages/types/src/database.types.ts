@@ -555,7 +555,7 @@ export type Database = {
           is_active: boolean;
           name: string;
           name_lao: string | null;
-          photo_url: string | null;
+          photo_urls: string[];
           price: number;
           seller_id: string;
           sku: string | null;
@@ -569,7 +569,7 @@ export type Database = {
           is_active?: boolean;
           name: string;
           name_lao?: string | null;
-          photo_url?: string | null;
+          photo_urls?: string[];
           price: number;
           seller_id: string;
           sku?: string | null;
@@ -583,7 +583,7 @@ export type Database = {
           is_active?: boolean;
           name?: string;
           name_lao?: string | null;
-          photo_url?: string | null;
+          photo_urls?: string[];
           price?: number;
           seller_id?: string;
           sku?: string | null;
