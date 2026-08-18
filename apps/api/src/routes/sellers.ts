@@ -3,6 +3,7 @@ import {
   CreateSellerSchema,
   SellerSearchSchema,
   SubmitVerificationSchema,
+  UpdateSellerSchema,
   VerificationUploadSchema,
   type CautionLevel,
 } from "@mekha/types";
@@ -121,17 +122,137 @@ sellersRoute.post("/", requireAuth, async (context) => {
   return context.json({ data: seller }, 201);
 });
 
+const dashboardProfileFields =
+  "id,business_name,business_name_lao,description,province,district,logo_url,facebook_url,tiktok_url,verification_status,created_at" as const;
+
 sellersRoute.get("/me", requireAuth, async (context) => {
   const supabase = createSupabaseClient(context.env);
-  const { data, error } = await supabase
+  const { data: seller, error } = await supabase
     .from("seller_profiles")
-    .select("id,business_name_lao,verification_status")
+    .select(dashboardProfileFields)
     .eq("owner_user_id", context.get("user").id)
     .maybeSingle();
   if (error)
     return apiError(context, 500, "INTERNAL_ERROR", "ໂຫລດຮ້ານຄ້າບໍ່ສຳເລັດ");
-  if (!data) return apiError(context, 404, "NOT_FOUND", "ບໍ່ພົບຮ້ານຄ້າ");
-  return context.json({ data });
+  if (!seller) return apiError(context, 404, "NOT_FOUND", "ບໍ່ພົບຮ້ານຄ້າ");
+
+  const [subscription, verifications, verifiedOrders, anyOrders, customers] =
+    await Promise.all([
+      supabase
+        .from("subscriptions")
+        .select("plan")
+        .eq("seller_id", seller.id)
+        .eq("status", "active")
+        .maybeSingle(),
+      supabase
+        .from("seller_verifications")
+        .select("id", { count: "exact", head: true })
+        .eq("seller_id", seller.id),
+      supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("seller_id", seller.id)
+        .in("status", ["delivered", "settled"]),
+      supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("seller_id", seller.id),
+      supabase
+        .from("customers")
+        .select("id", { count: "exact", head: true })
+        .eq("seller_id", seller.id),
+    ]);
+  if (
+    subscription.error ||
+    verifications.error ||
+    verifiedOrders.error ||
+    anyOrders.error ||
+    customers.error
+  )
+    return apiError(context, 500, "INTERNAL_ERROR", "ໂຫລດແດຊບອດບໍ່ສຳເລັດ");
+
+  return context.json({
+    data: {
+      ...seller,
+      subscription_plan: subscription.data?.plan ?? "free",
+      checklist: {
+        profile_created: true,
+        verification_submitted: (verifications.count ?? 0) > 0,
+        verification_approved: seller.verification_status === "verified",
+        first_order_created: (anyOrders.count ?? 0) > 0,
+      },
+      stats: {
+        total_orders: 0,
+        verified_orders: verifiedOrders.count ?? 0,
+        mtd_revenue: 0,
+        total_customers: customers.count ?? 0,
+      },
+    },
+  });
+});
+
+sellersRoute.patch("/:id", requireAuth, async (context) => {
+  const parsed = UpdateSellerSchema.safeParse(
+    await context.req.json().catch(() => null),
+  );
+  if (!parsed.success)
+    return apiError(context, 400, "BAD_REQUEST", "ຂໍ້ມູນຮ້ານຄ້າບໍ່ຖືກຕ້ອງ", {
+      fields: parsed.error.flatten().fieldErrors,
+    });
+  if (Object.keys(parsed.data).length === 0)
+    return apiError(context, 400, "BAD_REQUEST", "ບໍ່ມີຂໍ້ມູນທີ່ຈະບັນທຶກ");
+
+  const sellerId = context.req.param("id");
+  const supabase = createSupabaseClient(context.env);
+  const { data: seller, error: ownerError } = await supabase
+    .from("seller_profiles")
+    .select("id,province,district")
+    .eq("id", sellerId)
+    .eq("owner_user_id", context.get("user").id)
+    .maybeSingle();
+  if (ownerError)
+    return apiError(context, 500, "INTERNAL_ERROR", "ກວດສອບຮ້ານຄ້າບໍ່ສຳເລັດ");
+  if (!seller)
+    return apiError(context, 403, "FORBIDDEN", "ທ່ານບໍ່ມີສິດແກ້ໄຂຮ້ານນີ້");
+
+  if (parsed.data.province || parsed.data.district) {
+    const nextProvince = parsed.data.province ?? seller.province;
+    const nextDistrict = parsed.data.district ?? seller.district;
+    const { data: location } = await supabase
+      .from("lao_districts")
+      .select("id")
+      .eq("id", nextDistrict ?? "")
+      .eq("province_id", nextProvince ?? "")
+      .maybeSingle();
+    if (!location)
+      return apiError(
+        context,
+        400,
+        "INVALID_LOCATION",
+        "ແຂວງ ຫຼື ເມືອງບໍ່ຖືກຕ້ອງ",
+      );
+  }
+
+  const { data: updated, error } = await supabase
+    .from("seller_profiles")
+    .update(parsed.data)
+    .eq("id", sellerId)
+    .select(dashboardProfileFields)
+    .single();
+  if (error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ບັນທຶກຮ້ານຄ້າບໍ່ສຳເລັດ");
+
+  const audit = await supabase.from("audit_logs").insert({
+    actor_id: context.get("user").id,
+    event: "seller.profile_updated",
+    entity_type: "seller_profile",
+    entity_id: sellerId,
+    metadata: { fields: Object.keys(parsed.data) },
+  });
+  if (audit.error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ບັນທຶກປະຫວັດບໍ່ສຳເລັດ");
+
+  return context.json({ data: updated });
 });
 
 sellersRoute.post("/:id/verification-upload", requireAuth, async (context) => {

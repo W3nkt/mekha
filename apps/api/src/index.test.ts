@@ -103,6 +103,32 @@ describe("Mekha API", () => {
     });
   });
 
+  it("rejects a dashboard profile request without a token", async () => {
+    const response = await request("/v1/sellers/me", createEnv());
+
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
+  });
+
+  it("rejects a profile update without a token", async () => {
+    const response = await app.request(
+      "/v1/sellers/some-id",
+      {
+        method: "PATCH",
+        headers: { "cf-connecting-ip": "203.0.113.10" },
+        body: JSON.stringify({ description: "hello" }),
+      },
+      createEnv(),
+    );
+
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
+  });
+
   it("returns 404 for an invalid public seller profile ID", async () => {
     const response = await request("/v1/sellers/not-a-seller", createEnv());
 
