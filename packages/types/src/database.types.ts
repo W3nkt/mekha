@@ -1190,6 +1190,19 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      admin_decide_verification: {
+        Args: {
+          p_action: string;
+          p_admin_id: string;
+          p_reviewer_notes?: string | null;
+          p_verification_id: string;
+        };
+        Returns: Json;
+      };
+      admin_suspend_seller: {
+        Args: { p_admin_id: string; p_reason: string; p_seller_id: string };
+        Returns: Json;
+      };
       next_seller_order_number: {
         Args: { p_seller_id: string };
         Returns: number;
