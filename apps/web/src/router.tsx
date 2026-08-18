@@ -15,6 +15,7 @@ import {
 import { SellerVerificationPage } from "./pages/seller-verification";
 import { AdminVerificationsPage } from "./pages/admin-verifications";
 import { SellerDashboardPage } from "./pages/dashboard";
+import { SellerSectionPage } from "./pages/seller-section";
 
 export const router = createBrowserRouter([
   {
@@ -30,6 +31,15 @@ export const router = createBrowserRouter([
       { path: "/register/profile", element: <RegisterProfilePage /> },
       { path: "/seller/verify", element: <SellerVerificationPage /> },
       { path: "/dashboard", element: <SellerDashboardPage /> },
+      { path: "/dashboard/orders", element: <SellerSectionPage /> },
+      { path: "/dashboard/orders/new", element: <SellerSectionPage /> },
+      { path: "/dashboard/orders/:id", element: <SellerSectionPage /> },
+      { path: "/dashboard/products", element: <SellerSectionPage /> },
+      { path: "/dashboard/products/new", element: <SellerSectionPage /> },
+      { path: "/dashboard/products/:id", element: <SellerSectionPage /> },
+      { path: "/dashboard/finance", element: <SellerSectionPage /> },
+      { path: "/dashboard/trust", element: <SellerSectionPage /> },
+      { path: "/dashboard/settings", element: <SellerSectionPage /> },
       { path: "/admin/verifications", element: <AdminVerificationsPage /> },
       {
         path: "/register/verification",

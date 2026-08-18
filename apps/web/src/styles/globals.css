@@ -1832,6 +1832,12 @@ p {
   background: var(--neutral-100);
   border-radius: 10px;
 }
+
+.seller-section-page { min-height: 60vh; padding: 1rem 0 2rem; }
+.seller-section-topbar { display: flex; align-items: center; justify-content: space-between; }
+.seller-section-topbar h1 { margin: 0; }
+.seller-section-topbar button { min-width: 44px; min-height: 44px; border: 0; background: transparent; color: var(--navy); }
+.seller-empty-state { display: grid; place-items: center; gap: 1rem; min-height: 42vh; padding: 2rem; text-align: center; border: 1px dashed var(--neutral-300); border-radius: 1rem; margin-top: 1rem; }
 @media (max-width: 620px) {
   .dashboard-identity-actions {
     grid-column: 1 / -1;
