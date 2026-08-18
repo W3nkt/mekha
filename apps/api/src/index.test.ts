@@ -116,6 +116,35 @@ describe("Mekha API", () => {
     });
   });
 
+  it("rejects an order creation request without a token", async () => {
+    const response = await app.request(
+      "/v1/orders",
+      {
+        method: "POST",
+        headers: { "cf-connecting-ip": "203.0.113.10" },
+        body: JSON.stringify({}),
+      },
+      createEnv(),
+    );
+
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
+  });
+
+  it("rejects a customer search request without a token", async () => {
+    const response = await request(
+      "/v1/customers/search?phone_prefix=020",
+      createEnv(),
+    );
+
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "UNAUTHORIZED",
+    });
+  });
+
   it("validates public seller search parameters", async () => {
     const response = await request(
       "/v1/sellers/search?q=&type=unknown",

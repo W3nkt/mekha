@@ -19,6 +19,7 @@ const seller = (
   province: null,
   district: null,
   logo_url: null,
+  order_counter: 0,
   phone: null,
   verification_status: "unverified",
   etrust_id: null,

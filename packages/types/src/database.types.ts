@@ -479,11 +479,13 @@ export type Database = {
           buyer_id: string | null;
           courier: string | null;
           created_at: string;
+          customer_id: string | null;
           delivery_address: Json | null;
           delivery_fee: number;
+          friendly_id: string;
           id: string;
+          note: string | null;
           payment_method: string | null;
-          product_snapshot: Json;
           safe_order_url: string | null;
           seller_confirmed_at: string | null;
           seller_id: string;
@@ -498,11 +500,13 @@ export type Database = {
           buyer_id?: string | null;
           courier?: string | null;
           created_at?: string;
+          customer_id?: string | null;
           delivery_address?: Json | null;
           delivery_fee?: number;
+          friendly_id: string;
           id?: string;
+          note?: string | null;
           payment_method?: string | null;
-          product_snapshot: Json;
           safe_order_url?: string | null;
           seller_confirmed_at?: string | null;
           seller_id: string;
@@ -517,11 +521,13 @@ export type Database = {
           buyer_id?: string | null;
           courier?: string | null;
           created_at?: string;
+          customer_id?: string | null;
           delivery_address?: Json | null;
           delivery_fee?: number;
+          friendly_id?: string;
           id?: string;
+          note?: string | null;
           payment_method?: string | null;
-          product_snapshot?: Json;
           safe_order_url?: string | null;
           seller_confirmed_at?: string | null;
           seller_id?: string;
@@ -539,10 +545,65 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "orders_customer_id_fkey";
+            columns: ["customer_id"];
+            isOneToOne: false;
+            referencedRelation: "customers";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "orders_seller_id_fkey";
             columns: ["seller_id"];
             isOneToOne: false;
             referencedRelation: "seller_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      order_items: {
+        Row: {
+          created_at: string;
+          id: string;
+          line_total: number;
+          order_id: string;
+          product_id: string | null;
+          product_name: string;
+          quantity: number;
+          unit_price: number;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          line_total: number;
+          order_id: string;
+          product_id?: string | null;
+          product_name: string;
+          quantity: number;
+          unit_price: number;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          line_total?: number;
+          order_id?: string;
+          product_id?: string | null;
+          product_name?: string;
+          quantity?: number;
+          unit_price?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
             referencedColumns: ["id"];
           },
         ];
@@ -821,6 +882,7 @@ export type Database = {
           facebook_url: string | null;
           id: string;
           logo_url: string | null;
+          order_counter: number;
           owner_user_id: string;
           phone: string | null;
           province: string | null;
@@ -838,6 +900,7 @@ export type Database = {
           facebook_url?: string | null;
           id?: string;
           logo_url?: string | null;
+          order_counter?: number;
           owner_user_id: string;
           phone?: string | null;
           province?: string | null;
@@ -855,6 +918,7 @@ export type Database = {
           facebook_url?: string | null;
           id?: string;
           logo_url?: string | null;
+          order_counter?: number;
           owner_user_id?: string;
           phone?: string | null;
           province?: string | null;
@@ -1126,7 +1190,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      next_seller_order_number: {
+        Args: { p_seller_id: string };
+        Returns: number;
+      };
     };
     Enums: {
       [_ in never]: never;
