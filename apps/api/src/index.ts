@@ -8,6 +8,7 @@ import { publicRateLimit } from "./middleware/rateLimit";
 import { adminRoute } from "./routes/admin";
 import { healthRoute } from "./routes/health";
 import { ordersRoute } from "./routes/orders";
+import { productsRoute } from "./routes/products";
 import { sellersRoute } from "./routes/sellers";
 import { trustRoute } from "./routes/trust";
 import type { ApiEnv } from "./types";
@@ -23,6 +24,7 @@ app.use("/v1/sellers/*", publicRateLimit);
 app.use("/v1/trust/*", publicRateLimit);
 app.route("/v1/sellers", sellersRoute);
 app.route("/v1/orders", ordersRoute);
+app.route("/v1/products", productsRoute);
 app.route("/v1/trust", trustRoute);
 app.route("/v1/admin", adminRoute);
 
