@@ -8,6 +8,7 @@ describe("seller profile verification presentation", () => {
 
   it("maps pending verification to the partial state", () => {
     expect(getVerification("pending").tone).toBe("partial");
+    expect(getVerification("partially_verified").tone).toBe("partial");
   });
 
   it("maps unverified and rejected sellers to the neutral state", () => {

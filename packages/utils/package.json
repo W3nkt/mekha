@@ -8,8 +8,14 @@
   },
   "scripts": {
     "build": "node ../../scripts/build-placeholder.mjs",
-    "test": "node --test",
+    "test": "vitest run",
     "lint": "tsc --noEmit",
     "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@mekha/types": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "4.1.10"
   }
 }

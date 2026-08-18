@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { SellerSearchSchema, type CautionLevel } from "@mekha/types";
+import { computeTrustProfile } from "@mekha/utils";
 
 import { apiError } from "../lib/errors";
 import { createSupabaseClient } from "../lib/supabase";
@@ -127,29 +128,6 @@ sellersRoute.get("/search", async (context) => {
   });
 });
 
-const signalMessages = {
-  identity_verified: {
-    lo: "ຢືນຢັນຕົວຕົນແລ້ວ",
-    en: "Identity document verified by the LaoTrust team",
-  },
-  orders_delivered: {
-    lo: "ມີຄຳສັ່ງຊື້ທີ່ສົ່ງສຳເລັດ",
-    en: "Has verified completed deliveries",
-  },
-  new_seller: {
-    lo: "ຮ້ານເປີດໃໝ່ — ລົງທະບຽນບໍ່ເຖິງ 30 ມື້",
-    en: "New seller — registered less than 30 days ago",
-  },
-  unverified: {
-    lo: "ຜູ້ຂາຍຍັງບໍ່ໄດ້ສົ່ງເອກະສານຢືນຢັນ",
-    en: "Seller has not submitted identity documents",
-  },
-  reported_warning: {
-    lo: "ພົບສັນຍານທີ່ຄວນກວດສອບເພີ່ມ",
-    en: "A signal requires additional checking before payment",
-  },
-} as const;
-
 sellersRoute.get("/:id", async (context) => {
   const sellerId = context.req.param("id");
   if (
@@ -163,9 +141,7 @@ sellersRoute.get("/:id", async (context) => {
   const supabase = createSupabaseClient(context.env);
   const profileResponse = await supabase
     .from("seller_profiles")
-    .select(
-      "id,business_name,business_name_lao,description,province,district,logo_url,verification_status,facebook_url,tiktok_url,created_at",
-    )
+    .select("*")
     .eq("id", sellerId)
     .neq("verification_status", "suspended")
     .maybeSingle();
@@ -177,14 +153,23 @@ sellersRoute.get("/:id", async (context) => {
     return apiError(context, 404, "NOT_FOUND", "Seller not found");
   }
 
+  const sevenDaysAgo = new Date(Date.now() - 7 * 86_400_000).toISOString();
   const [
+    verifications,
+    identifiers,
     verifiedOrders,
     totalOrders,
     disputes,
+    ratings,
+    unresolvedReports,
+    totalReports,
     risks,
+    profileChanges,
     verifiedReviews,
     unverifiedReviews,
   ] = await Promise.all([
+    supabase.from("seller_verifications").select("*").eq("seller_id", sellerId),
+    supabase.from("seller_identifiers").select("*").eq("seller_id", sellerId),
     supabase
       .from("orders")
       .select("id", { count: "exact", head: true })
@@ -200,11 +185,34 @@ sellersRoute.get("/:id", async (context) => {
       .eq("seller_id", sellerId)
       .eq("status", "disputed"),
     supabase
+      .from("reviews")
+      .select("rating_overall")
+      .eq("seller_id", sellerId)
+      .eq("status", "active")
+      .eq("verified_transaction", true)
+      .not("rating_overall", "is", null)
+      .limit(1000),
+    supabase
+      .from("reports")
+      .select("id", { count: "exact", head: true })
+      .eq("seller_id", sellerId)
+      .in("status", ["pending", "under_review"]),
+    supabase
+      .from("reports")
+      .select("id", { count: "exact", head: true })
+      .eq("seller_id", sellerId),
+    supabase
       .from("risk_signals")
-      .select("signal_type,severity")
+      .select("*")
       .eq("seller_id", sellerId)
       .eq("is_active", true)
       .eq("status", "active"),
+    supabase
+      .from("audit_logs")
+      .select("id", { count: "exact", head: true })
+      .eq("entity_type", "seller_profile")
+      .eq("entity_id", sellerId)
+      .gte("created_at", sevenDaysAgo),
     supabase
       .from("reviews")
       .select("id,rating_overall,review_text,verified_transaction,created_at")
@@ -223,81 +231,80 @@ sellersRoute.get("/:id", async (context) => {
       .limit(5),
   ]);
   if (
+    verifications.error ||
+    identifiers.error ||
     verifiedOrders.error ||
     totalOrders.error ||
     disputes.error ||
+    ratings.error ||
+    unresolvedReports.error ||
+    totalReports.error ||
     risks.error ||
+    profileChanges.error ||
     verifiedReviews.error ||
     unverifiedReviews.error
   ) {
     return apiError(context, 500, "INTERNAL_ERROR", "Seller trust data failed");
   }
 
-  const verifiedOrderCount = verifiedOrders.count ?? 0;
-  const totalOrderCount = totalOrders.count ?? 0;
-  const disputeCount = disputes.count ?? 0;
-  const ageMs =
-    Date.now() - new Date(profileResponse.data.created_at).getTime();
-  const monthsActive = Math.max(0, Math.floor(ageMs / 2_629_746_000));
-  const trustSignals = [];
-  if (profileResponse.data.verification_status === "verified") {
-    trustSignals.push({
-      type: "positive" as const,
-      code: "identity_verified",
-      message_lo: signalMessages.identity_verified.lo,
-      message_en: signalMessages.identity_verified.en,
-    });
-  } else {
-    trustSignals.push({
-      type: "warning" as const,
-      code: "unverified",
-      message_lo: signalMessages.unverified.lo,
-      message_en: signalMessages.unverified.en,
-    });
-  }
-  if (verifiedOrderCount > 0)
-    trustSignals.push({
-      type: "positive" as const,
-      code: "orders_delivered",
-      message_lo: `${signalMessages.orders_delivered.lo} ${verifiedOrderCount} ຄຳສັ່ງ`,
-      message_en: `${verifiedOrderCount} verified completed deliveries`,
-    });
-  if (ageMs < 30 * 86_400_000)
-    trustSignals.push({
-      type: "warning" as const,
-      code: "new_seller",
-      message_lo: signalMessages.new_seller.lo,
-      message_en: signalMessages.new_seller.en,
-    });
-  for (const risk of risks.data ?? [])
-    trustSignals.push({
-      type: risk.severity,
-      code: risk.signal_type,
-      message_lo: signalMessages.reported_warning.lo,
-      message_en: signalMessages.reported_warning.en,
-    });
-  const cautionLevel: CautionLevel = (risks.data ?? []).some(
-    ({ severity }) => severity === "critical",
-  )
-    ? "high"
-    : (risks.data ?? []).some(({ severity }) => severity === "warning")
-      ? "medium"
-      : verifiedOrderCount > 0 ||
-          profileResponse.data.verification_status === "verified"
-        ? "low"
-        : "insufficient_information";
+  const reviewRatings = (ratings.data ?? []).flatMap(({ rating_overall }) =>
+    rating_overall === null ? [] : [rating_overall],
+  );
+  const engine = computeTrustProfile({
+    seller: profileResponse.data,
+    verifications: verifications.data ?? [],
+    identifiers: identifiers.data ?? [],
+    orderStats: {
+      total: totalOrders.count ?? 0,
+      verified: verifiedOrders.count ?? 0,
+      dispute_count: disputes.count ?? 0,
+      on_time_count: null,
+    },
+    reviewStats: {
+      count: reviewRatings.length,
+      avg_rating: reviewRatings.length
+        ? reviewRatings.reduce((sum, rating) => sum + rating, 0) /
+          reviewRatings.length
+        : 0,
+    },
+    reportStats: {
+      unresolved: unresolvedReports.count ?? 0,
+      total: totalReports.count ?? 0,
+    },
+    riskSignals: risks.data ?? [],
+    profileChangeCount: profileChanges.count ?? 0,
+    evaluatedAt: new Date().toISOString(),
+  });
+
+  const {
+    id,
+    business_name,
+    business_name_lao,
+    description,
+    province,
+    district,
+    logo_url,
+    facebook_url,
+    tiktok_url,
+    created_at,
+  } = profileResponse.data;
 
   return context.json({
     data: {
-      ...profileResponse.data,
-      caution_level: cautionLevel,
-      trust_signals: trustSignals,
-      verified_order_count: verifiedOrderCount,
-      months_active: monthsActive,
-      on_time_rate: null,
-      dispute_rate: totalOrderCount
-        ? Math.round((disputeCount / totalOrderCount) * 1000) / 10
-        : null,
+      id,
+      business_name,
+      business_name_lao,
+      description,
+      province,
+      district,
+      logo_url,
+      facebook_url,
+      tiktok_url,
+      created_at,
+      verification_status: engine.verification_status,
+      caution_level: engine.caution_level,
+      trust_signals: engine.signals,
+      ...engine.stats,
       reviews: [
         ...(verifiedReviews.data ?? []),
         ...(unverifiedReviews.data ?? []),

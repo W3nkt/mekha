@@ -46,7 +46,9 @@ const verificationCopy = {
 export const getVerification = (status: string) =>
   status === "verified"
     ? verificationCopy.verified
-    : ["pending", "additional_info_required"].includes(status)
+    : ["pending", "additional_info_required", "partially_verified"].includes(
+          status,
+        )
       ? verificationCopy.partial
       : verificationCopy.unverified;
 
