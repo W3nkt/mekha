@@ -1093,6 +1093,44 @@ p {
   gap: 20px;
   padding: 30px 0;
 }
+
+.profile-sharing {
+  display: grid;
+  gap: 1rem;
+}
+
+.profile-share-row {
+  display: flex;
+  gap: .75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.profile-share-row code {
+  flex: 1 1 18rem;
+  overflow-wrap: anywhere;
+  padding: .8rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: .75rem;
+  color: var(--ink-soft);
+}
+
+.profile-share-row button,
+.profile-share-links a,
+.profile-qr button {
+  border: 0;
+  border-radius: 999px;
+  padding: .7rem 1rem;
+  background: var(--navy);
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+  font: inherit;
+}
+
+.profile-share-links { display: flex; gap: .65rem; flex-wrap: wrap; }
+.profile-qr { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+.profile-qr img { width: 160px; height: 160px; border-radius: .75rem; background: white; padding: .5rem; }
 .profile-actions > div {
   display: flex;
   gap: 16px;

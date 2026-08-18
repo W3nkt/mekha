@@ -688,6 +688,13 @@ sellersRoute.get("/:id/export", requireAuth, async (context) => {
 const profileFields =
   "id,business_name,business_name_lao,province,logo_url,verification_status" as const;
 
+const escapeXml = (value: string | null | undefined) =>
+  (value ?? "").replace(/[<>&'\"]/g, (character) =>
+    ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" })[
+      character
+    ]!,
+  );
+
 const phoneCandidates = (value: string) => {
   const digits = value.replace(/\D/g, "");
   const laoDigits = digits.startsWith("856") ? `0${digits.slice(3)}` : digits;
@@ -800,6 +807,40 @@ sellersRoute.get("/search", async (context) => {
       verified_order_count: orderCounts.get(profile.id) ?? 0,
       caution_level: caution.get(profile.id) ?? "insufficient_information",
     })),
+  });
+});
+
+sellersRoute.get("/:id/og-image", async (context) => {
+  const sellerId = context.req.param("id");
+  if (!/^[0-9a-f-]{36}$/i.test(sellerId))
+    return apiError(context, 404, "NOT_FOUND", "Seller not found");
+  const supabase = createSupabaseClient(context.env);
+  const [{ data: seller, error }, { count: orderCount, error: orderError }] =
+    await Promise.all([
+      supabase
+        .from("seller_profiles")
+        .select("business_name,business_name_lao,province,verification_status")
+        .eq("id", sellerId)
+        .neq("verification_status", "suspended")
+        .maybeSingle(),
+      supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("seller_id", sellerId)
+        .in("status", ["delivered", "settled"]),
+    ]);
+  if (error || orderError)
+    return apiError(context, 500, "INTERNAL_ERROR", "Seller image failed");
+  if (!seller) return apiError(context, 404, "NOT_FOUND", "Seller not found");
+  const name = seller.business_name_lao || seller.business_name || "MeKha seller";
+  const verified = seller.verification_status === "verified";
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630"><rect width="1200" height="630" fill="#f7f4ea"/><rect width="1200" height="630" fill="#213b60" opacity=".96"/><circle cx="1040" cy="-30" r="260" fill="#d88a1d" opacity=".25"/><text x="72" y="104" fill="#f6c36c" font-family="Arial,sans-serif" font-size="30" font-weight="700">MeKha / LaoTrust</text><text x="72" y="265" fill="white" font-family="Arial,sans-serif" font-size="64" font-weight="700">${escapeXml(name)}</text><text x="72" y="325" fill="#dbe8f5" font-family="Arial,sans-serif" font-size="34">${escapeXml(seller.province || "Lao P.D.R.")}</text><rect x="72" y="392" width="410" height="74" rx="37" fill="${verified ? "#d88a1d" : "#58718f"}"/><text x="108" y="440" fill="white" font-family="Arial,sans-serif" font-size="28" font-weight="700">${verified ? "✓ Verified Seller" : "Trust profile"}</text><text x="72" y="545" fill="#dbe8f5" font-family="Arial,sans-serif" font-size="29">${(orderCount ?? 0).toLocaleString()} verified orders</text></svg>`;
+  return new Response(svg, {
+    headers: {
+      "Content-Type": "image/svg+xml; charset=utf-8",
+      "Cache-Control": "public, max-age=300, s-maxage=3600",
+      "Content-Disposition": `inline; filename="seller-${sellerId}.svg"`,
+    },
   });
 });
 

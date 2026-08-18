@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import QRCode from "qrcode";
 import { useQuery } from "@tanstack/react-query";
 import type { SellerTrustProfile, TrustSignal } from "@mekha/types";
 import {
@@ -79,6 +80,7 @@ function Signal({ signal }: { signal: TrustSignal }) {
 export function SellerProfilePage() {
   const { id = "" } = useParams();
   const [shared, setShared] = useState(false);
+  const [qrCode, setQrCode] = useState<string | null>(null);
   const [expandedReview, setExpandedReview] = useState<string | null>(null);
   const profile = useQuery({
     queryKey: ["seller-profile", id],
@@ -92,10 +94,14 @@ export function SellerProfilePage() {
     if (!seller) return;
     const name = seller.business_name_lao || seller.business_name;
     document.title = `${name} | LaoTrust`;
+    const image = `https://mekha-api.wen-kt2020.workers.dev/v1/sellers/${seller.id}/og-image`;
     const values = {
       "og:title": `${name} | LaoTrust`,
       "og:description": `ກວດສອບສະຖານະ ແລະ ສັນຍານຄວາມໄວ້ວາງໃຈຂອງ ${name}`,
-      "og:image": seller.logo_url || "/icons/icon-512.png",
+      "og:image": image,
+      "og:url": window.location.href,
+      "twitter:card": "summary_large_image",
+      "twitter:image": image,
     };
     for (const [property, content] of Object.entries(values)) {
       let meta = document.head.querySelector<HTMLMetaElement>(
@@ -114,7 +120,7 @@ export function SellerProfilePage() {
     const url = `${window.location.origin}/s/${id}`;
     try {
       if (navigator.share)
-        await navigator.share({ title: document.title, url });
+        await navigator.share({ title: document.title, text: "Check this seller trust profile", url });
       else await navigator.clipboard.writeText(url);
       setShared(true);
       window.setTimeout(() => setShared(false), 2200);
@@ -142,6 +148,23 @@ export function SellerProfilePage() {
     );
 
   const seller = profile.data.data;
+  const profileUrl = `${window.location.origin}/s/${seller.id}`;
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`Check my seller profile: ${profileUrl}`)}`;
+  const createQr = async () =>
+    setQrCode(
+      await QRCode.toDataURL(profileUrl, {
+        width: 320,
+        margin: 2,
+        errorCorrectionLevel: "M",
+      }),
+    );
+  const downloadQr = () => {
+    if (!qrCode) return;
+    const link = document.createElement("a");
+    link.href = qrCode;
+    link.download = `mekha-seller-${seller.id}-qr.png`;
+    link.click();
+  };
   const verification = getVerification(seller.verification_status);
   const verifiedReviews = seller.reviews.filter(
     (review) => review.verified_transaction,
@@ -225,6 +248,26 @@ export function SellerProfilePage() {
             {value === "—" && <small>ຂໍ້ມູນບໍ່ພຽງພໍ</small>}
           </div>
         ))}
+      </section>
+
+      <section className="profile-section profile-sharing" aria-labelledby="profile-sharing-title">
+        <p className="eyebrow">Share this trust profile</p>
+        <h2 id="profile-sharing-title">ແບ່ງປັນໂປຣໄຟລ໌</h2>
+        <div className="profile-share-row">
+          <code>{profileUrl}</code>
+          <button type="button" onClick={() => void navigator.clipboard.writeText(profileUrl).then(() => setShared(true))}>
+            {shared ? "ສຳເນົາ URL ແລ້ວ!" : "ສຳເນົາ"}
+          </button>
+        </div>
+        <div className="profile-share-links">
+          <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(profileUrl)}`} target="_blank" rel="noreferrer">Facebook</a>
+          <a href={whatsappUrl} target="_blank" rel="noreferrer">WhatsApp</a>
+          <a href={`https://mekha-api.wen-kt2020.workers.dev/v1/sellers/${seller.id}/og-image`} download={`mekha-seller-${seller.id}-badge.svg`}>Trust badge</a>
+        </div>
+        <div className="profile-qr">
+          {!qrCode ? <button type="button" onClick={() => void createQr()}>ສ້າງ QR Code</button> : <img src={qrCode} alt="QR code for this seller profile" />}
+          {qrCode && <button type="button" onClick={downloadQr}>ດາວໂຫລດ QR Code</button>}
+        </div>
       </section>
 
       <section className="profile-section reviews-section">
