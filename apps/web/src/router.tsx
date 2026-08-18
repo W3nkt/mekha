@@ -7,6 +7,11 @@ import { LoginPage } from "./pages/login";
 import { ComponentsPage } from "./pages/dev-components";
 import { NotFoundPage } from "./pages/404";
 import { SellerProfilePage } from "./pages/seller-profile";
+import {
+  RegisterPhonePage,
+  RegisterProfilePage,
+  RegisterVerifyPage,
+} from "./pages/register";
 
 export const router = createBrowserRouter([
   {
@@ -17,6 +22,13 @@ export const router = createBrowserRouter([
       { path: "/seller/:id", element: <SellerProfilePage /> },
       { path: "/s/:id", element: <SellerProfilePage /> },
       { path: "/login", element: <LoginPage /> },
+      { path: "/register", element: <RegisterPhonePage /> },
+      { path: "/register/verify", element: <RegisterVerifyPage /> },
+      { path: "/register/profile", element: <RegisterProfilePage /> },
+      {
+        path: "/register/verification",
+        element: <ComingSoonPage section="verification" />,
+      },
       { path: "/dev/components", element: <ComponentsPage /> },
       { path: "/orders", element: <ComingSoonPage section="orders" /> },
       { path: "/products", element: <ComingSoonPage section="products" /> },

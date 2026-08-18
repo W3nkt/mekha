@@ -1200,3 +1200,123 @@ p {
     transition-duration: 0.01ms !important;
   }
 }
+.registration {
+  max-width: 620px;
+  margin: 30px auto 100px;
+  padding: clamp(24px, 6vw, 54px);
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 28px;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+.registration-progress {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 44px;
+}
+.registration-progress span {
+  height: 4px;
+  flex: 1;
+  border-radius: 9px;
+  background: #e2e8f0;
+}
+.registration-progress .active {
+  background: var(--brand-700);
+}
+.registration .eyebrow {
+  color: var(--brand-700);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.registration h1 {
+  font-size: clamp(28px, 6vw, 44px);
+  line-height: 1.1;
+  margin: 10px 0 12px;
+}
+.registration > p:not(.eyebrow) {
+  color: #64748b;
+  line-height: 1.7;
+}
+.registration form {
+  display: grid;
+  gap: 16px;
+  margin-top: 30px;
+}
+.registration label {
+  display: grid;
+  gap: 8px;
+  font-weight: 700;
+}
+.registration input,
+.registration textarea,
+.registration select {
+  width: 100%;
+  min-height: 50px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 11px 13px;
+  font: inherit;
+  background: #fff;
+}
+.registration textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+.registration button {
+  min-height: 50px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--brand-900);
+  color: #fff;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.registration button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.form-error {
+  color: #b42318 !important;
+  font-size: 14px;
+}
+.otp-row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin: 30px 0 18px;
+}
+.otp-row input {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 800;
+  padding: 8px;
+}
+.registration .text-button {
+  width: 100%;
+  background: transparent;
+  color: var(--brand-900);
+}
+.profile-form {
+  grid-template-columns: 1fr 1fr;
+}
+.profile-form label:nth-child(3),
+.profile-form .form-error,
+.profile-form button {
+  grid-column: 1/-1;
+}
+@media (max-width: 600px) {
+  .registration {
+    margin-top: 10px;
+    border-radius: 20px;
+    padding: 24px 18px;
+  }
+  .profile-form {
+    grid-template-columns: 1fr;
+  }
+  .profile-form > * {
+    grid-column: 1 !important;
+  }
+}

@@ -7,6 +7,7 @@ import {
   RequestOtpSchema,
   TrustCheckSchema,
   VerifyOtpSchema,
+  normalizeLaoPhone,
   type CourierAdapter,
   type OrderWithAddress,
 } from "./index";
@@ -15,10 +16,12 @@ describe("shared API schemas", () => {
   it("validates seller input", () => {
     expect(
       CreateSellerSchema.parse({
-        business_name: "Mekha Shop",
-        phone: "02055555555",
+        business_name_lao: "ຮ້ານເມກຂາ",
+        province: "VTE",
+        district: "VTE-0101",
+        phone: "+8562055555555",
       }),
-    ).toMatchObject({ business_name: "Mekha Shop" });
+    ).toMatchObject({ business_name_lao: "ຮ້ານເມກຂາ" });
     expect(() =>
       CreateSellerSchema.parse({ business_name: "x", phone: "bad" }),
     ).toThrow();
@@ -38,12 +41,15 @@ describe("shared API schemas", () => {
       RequestOtpSchema.safeParse({ phone: "+8562055555555" }).success,
     ).toBe(true);
     expect(
-      VerifyOtpSchema.safeParse({ phone: "02055555555", token: "123456" })
+      VerifyOtpSchema.safeParse({ phone: "+8562055555555", token: "123456" })
         .success,
     ).toBe(true);
     expect(
-      VerifyOtpSchema.safeParse({ phone: "02055555555", token: "123" }).success,
+      VerifyOtpSchema.safeParse({ phone: "+8562055555555", token: "123" })
+        .success,
     ).toBe(false);
+    expect(normalizeLaoPhone("020 5555 5555")).toBe("+8562055555555");
+    expect(normalizeLaoPhone("8562055555555")).toBe("+8562055555555");
   });
 
   it("validates reviews and reports", () => {

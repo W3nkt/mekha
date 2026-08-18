@@ -2,14 +2,34 @@ import { z } from "zod";
 import { LaoPhoneSchema } from "./auth";
 
 export const CreateSellerSchema = z.object({
-  business_name: z.string().trim().min(2).max(100),
-  business_name_lao: z.string().trim().max(100).optional(),
-  description: z.string().trim().max(500).optional(),
-  province: z.string().trim().optional(),
-  district: z.string().trim().optional(),
+  business_name: z.string().trim().max(100).optional(),
+  business_name_lao: z.string().trim().min(2).max(100),
+  description: z.string().trim().max(200).optional(),
+  province: z.string().trim().min(1),
+  district: z.string().trim().min(1),
   phone: LaoPhoneSchema,
-  facebook_url: z.string().url().optional(),
-  tiktok_url: z.string().url().optional(),
+  facebook_url: z
+    .string()
+    .url()
+    .refine(
+      (value) =>
+        ["facebook.com", "www.facebook.com", "fb.com", "www.fb.com"].includes(
+          new URL(value).hostname.toLowerCase(),
+        ),
+      "Invalid Facebook URL",
+    )
+    .optional(),
+  tiktok_url: z
+    .string()
+    .url()
+    .refine(
+      (value) =>
+        ["tiktok.com", "www.tiktok.com"].includes(
+          new URL(value).hostname.toLowerCase(),
+        ),
+      "Invalid TikTok URL",
+    )
+    .optional(),
 });
 export type CreateSeller = z.infer<typeof CreateSellerSchema>;
 

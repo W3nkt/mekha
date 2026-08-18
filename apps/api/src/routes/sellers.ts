@@ -1,14 +1,110 @@
 import { Hono } from "hono";
-import { SellerSearchSchema, type CautionLevel } from "@mekha/types";
+import {
+  CreateSellerSchema,
+  SellerSearchSchema,
+  type CautionLevel,
+} from "@mekha/types";
 import { computeTrustProfile } from "@mekha/utils";
 
 import { apiError } from "../lib/errors";
 import { createSupabaseClient } from "../lib/supabase";
 import type { ApiEnv } from "../types";
+import { requireAuth } from "../middleware/auth";
 
 export const sellersRoute = new Hono<ApiEnv>();
 
 sellersRoute.get("/", (context) => context.json({ data: [] }));
+
+sellersRoute.post("/", requireAuth, async (context) => {
+  const parsed = CreateSellerSchema.safeParse(
+    await context.req.json().catch(() => null),
+  );
+  if (!parsed.success)
+    return apiError(context, 400, "BAD_REQUEST", "ຂໍ້ມູນຮ້ານຄ້າບໍ່ຖືກຕ້ອງ", {
+      fields: parsed.error.flatten().fieldErrors,
+    });
+  const user = context.get("user");
+  if (user.phone !== parsed.data.phone)
+    return apiError(
+      context,
+      403,
+      "PHONE_MISMATCH",
+      "ເບີໂທບໍ່ກົງກັບເບີທີ່ຢືນຢັນ",
+    );
+  const supabase = createSupabaseClient(context.env);
+  const existing = await supabase
+    .from("seller_profiles")
+    .select("id")
+    .eq("owner_user_id", user.id)
+    .maybeSingle();
+  if (existing.error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ບໍ່ສາມາດກວດສອບບັນຊີໄດ້");
+  if (existing.data)
+    return apiError(context, 409, "SELLER_EXISTS", "ບັນຊີນີ້ມີຮ້ານຄ້າແລ້ວ");
+  const { data: location } = await supabase
+    .from("lao_districts")
+    .select("id,province_id")
+    .eq("id", parsed.data.district)
+    .eq("province_id", parsed.data.province)
+    .maybeSingle();
+  if (!location)
+    return apiError(
+      context,
+      400,
+      "INVALID_LOCATION",
+      "ແຂວງ ຫຼື ເມືອງບໍ່ຖືກຕ້ອງ",
+    );
+  const upsertUser = await supabase
+    .from("users")
+    .upsert(
+      { id: user.id, phone: user.phone, role: "seller" },
+      { onConflict: "id" },
+    );
+  if (upsertUser.error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ບໍ່ສາມາດສ້າງໂປຣໄຟລ໌ໄດ້");
+  const { data: seller, error } = await supabase
+    .from("seller_profiles")
+    .insert({
+      ...parsed.data,
+      business_name: parsed.data.business_name || parsed.data.business_name_lao,
+      owner_user_id: user.id,
+      verification_status: "unverified",
+    })
+    .select()
+    .single();
+  if (error)
+    return apiError(
+      context,
+      error.code === "23505" ? 409 : 500,
+      error.code === "23505" ? "SELLER_EXISTS" : "INTERNAL_ERROR",
+      error.code === "23505"
+        ? "ບັນຊີນີ້ມີຮ້ານຄ້າແລ້ວ"
+        : "ບໍ່ສາມາດສ້າງຮ້ານຄ້າໄດ້",
+    );
+  const related = await Promise.all([
+    supabase
+      .from("subscriptions")
+      .insert({ seller_id: seller.id, plan: "free", status: "active" }),
+    supabase.from("audit_logs").insert({
+      actor_id: user.id,
+      event: "seller.created",
+      entity_type: "seller_profile",
+      entity_id: seller.id,
+      metadata: { source: "phone_registration" },
+    }),
+  ]);
+  if (related.some(({ error: relatedError }) => relatedError)) {
+    await supabase.from("seller_profiles").delete().eq("id", seller.id);
+    console.error(
+      JSON.stringify({
+        event: "seller_registration_related_write_failed",
+        sellerId: seller.id,
+      }),
+    );
+    return apiError(context, 500, "INTERNAL_ERROR", "ບໍ່ສາມາດສ້າງຮ້ານຄ້າໄດ້");
+  }
+  return context.json({ data: seller }, 201);
+});
 
 const profileFields =
   "id,business_name,business_name_lao,province,logo_url,verification_status" as const;

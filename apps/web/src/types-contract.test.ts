@@ -5,8 +5,10 @@ describe("@mekha/types web contract", () => {
   it("resolves and validates shared seller schemas", () => {
     expect(
       CreateSellerSchema.safeParse({
-        business_name: "Mekha",
-        phone: "02055555555",
+        business_name_lao: "ຮ້ານເມກຂາ",
+        province: "VTE",
+        district: "VTE-0101",
+        phone: "+8562055555555",
       }).success,
     ).toBe(true);
   });
