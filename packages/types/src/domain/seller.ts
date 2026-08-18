@@ -1,5 +1,5 @@
 import type { Database } from "../database.types";
-import type { CautionLevel, TrustSignalType } from "../enums";
+import type { CautionLevel, SubscriptionPlan, TrustSignalType } from "../enums";
 
 export type SellerProfile =
   Database["public"]["Tables"]["seller_profiles"]["Row"];
@@ -47,4 +47,37 @@ export type PublicSellerReview = {
   review_text: string | null;
   verified_transaction: boolean;
   created_at: string;
+};
+
+export type SellerDashboardChecklist = {
+  profile_created: boolean;
+  verification_submitted: boolean;
+  verification_approved: boolean;
+  first_order_created: boolean;
+};
+
+export type SellerDashboardStats = {
+  total_orders: number;
+  verified_orders: number;
+  mtd_revenue: number;
+  total_customers: number;
+};
+
+export type SellerDashboardProfile = Pick<
+  SellerProfile,
+  | "id"
+  | "business_name"
+  | "business_name_lao"
+  | "description"
+  | "province"
+  | "district"
+  | "logo_url"
+  | "facebook_url"
+  | "tiktok_url"
+  | "verification_status"
+  | "created_at"
+> & {
+  subscription_plan: SubscriptionPlan;
+  checklist: SellerDashboardChecklist;
+  stats: SellerDashboardStats;
 };
