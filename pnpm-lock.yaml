@@ -72,6 +72,9 @@ importers:
       '@mekha/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@mekha/ui':
+        specifier: workspace:^
+        version: link:../../packages/ui
       '@supabase/supabase-js':
         specifier: '2'
         version: 2.112.3
@@ -161,7 +164,18 @@ importers:
 
   packages/typescript-config: {}
 
-  packages/ui: {}
+  packages/ui:
+    dependencies:
+      '@mekha/types':
+        specifier: workspace:^
+        version: link:../types
+    devDependencies:
+      '@types/react':
+        specifier: 19.2.18
+        version: 19.2.18
+      react:
+        specifier: 19.2.4
+        version: 19.2.4
 
   packages/utils: {}
 
@@ -2966,6 +2980,10 @@ packages:
     peerDependenciesMeta:
       react-dom:
         optional: true
+
+  react@19.2.4:
+    resolution: {integrity: sha512-9nfp2hYpCwOjAN+8TZFGhtWEwgvWHXqESH8qT89AT/lWklpLON22Lc8pEtnpsZz7VmawabSU0gCjnj8aC0euHQ==}
+    engines: {node: '>=0.10.0'}
 
   react@19.2.8:
     resolution: {integrity: sha512-PWaYA1L/q9u2u7xYQi+Y3L3Yfnie7XyLeaJICV1MGD6LprsBxcAqGjYyr0eY3p+QdsA+x/Irkt4Qif8D63+Sbw==}
@@ -6205,6 +6223,8 @@ snapshots:
       set-cookie-parser: 2.7.2
     optionalDependencies:
       react-dom: 19.2.8(react@19.2.8)
+
+  react@19.2.4: {}
 
   react@19.2.8: {}
 

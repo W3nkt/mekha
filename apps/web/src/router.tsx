@@ -4,6 +4,7 @@ import App from "./App";
 import { ComingSoonPage } from "./pages/coming-soon";
 import { HomePage } from "./pages/index";
 import { LoginPage } from "./pages/login";
+import { ComponentsPage } from "./pages/dev-components";
 import { NotFoundPage } from "./pages/404";
 
 export const router = createBrowserRouter([
@@ -12,6 +13,7 @@ export const router = createBrowserRouter([
     children: [
       { path: "/", element: <HomePage /> },
       { path: "/login", element: <LoginPage /> },
+      { path: "/dev/components", element: <ComponentsPage /> },
       { path: "/orders", element: <ComingSoonPage section="orders" /> },
       { path: "/products", element: <ComingSoonPage section="products" /> },
       { path: "/finance", element: <ComingSoonPage section="finance" /> },
