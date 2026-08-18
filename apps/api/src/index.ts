@@ -9,6 +9,7 @@ import { adminRoute } from "./routes/admin";
 import { customersRoute } from "./routes/customers";
 import { healthRoute } from "./routes/health";
 import { financeRoute } from "./routes/finance";
+import { webhooksRoute } from "./routes/webhooks";
 import { ordersRoute } from "./routes/orders";
 import { sellersRoute } from "./routes/sellers";
 import { trustRoute } from "./routes/trust";
@@ -27,6 +28,7 @@ app.route("/v1/sellers", sellersRoute);
 app.route("/v1/orders", ordersRoute);
 app.route("/v1/customers", customersRoute);
 app.route("/v1/finance", financeRoute);
+app.route("/v1/webhooks", webhooksRoute);
 app.route("/v1/trust", trustRoute);
 app.route("/v1/admin", adminRoute);
 
