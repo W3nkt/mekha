@@ -13,6 +13,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@cf-wasm/png": "^0.4.0",
     "@mekha/types": "workspace:*",
     "@mekha/utils": "workspace:*",
     "@supabase/supabase-js": "^2.112.3",

@@ -124,96 +124,27 @@ async function decide(
   const supabase = createSupabaseClient(context.env);
   const id = context.req.param("id") ?? "";
   const adminId = context.get("user").id;
-  const current = await supabase
-    .from("seller_verifications")
-    .select("id,seller_id,verification_type,status")
-    .eq("id", id)
-    .maybeSingle();
-  if (!current.data)
-    return apiError(context, 404, "NOT_FOUND", "Verification not found");
-  const status =
-    action === "approve"
-      ? "approved"
-      : action === "reject"
-        ? "rejected"
-        : "additional_info_required";
-  const update = await supabase
-    .from("seller_verifications")
-    .update({
-      status,
-      reviewer_notes: parsed.data.reviewer_notes ?? null,
-      reviewed_by: adminId,
-      reviewed_at: new Date().toISOString(),
-    })
-    .eq("id", id)
-    .eq("status", "pending")
-    .select("id")
-    .maybeSingle();
-  if (update.error)
-    return apiError(context, 500, "INTERNAL_ERROR", "Decision failed");
-  if (!update.data)
+  const { data, error } = await supabase.rpc("admin_decide_verification", {
+    p_verification_id: id,
+    p_action: action,
+    p_admin_id: adminId,
+    p_reviewer_notes: parsed.data.reviewer_notes ?? null,
+  });
+  if (error) {
+    const status =
+      error.code === "P0002" ? 404 : error.code === "40001" ? 409 : 400;
     return apiError(
       context,
-      409,
-      "CONFLICT",
-      "Verification was already reviewed",
+      status,
+      status === 404
+        ? "NOT_FOUND"
+        : status === 409
+          ? "CONFLICT"
+          : "BAD_REQUEST",
+      error.message,
     );
-  if (action === "approve") {
-    const approved = await supabase
-      .from("seller_verifications")
-      .select("verification_type")
-      .eq("seller_id", current.data.seller_id)
-      .eq("status", "approved");
-    const types = new Set(
-      (approved.data ?? []).map((row) => row.verification_type),
-    );
-    const profileStatus =
-      types.has("identity") && types.has("business_registration")
-        ? "verified"
-        : types.has("identity")
-          ? "partially_verified"
-          : "unverified";
-    await supabase
-      .from("seller_profiles")
-      .update({ verification_status: profileStatus })
-      .eq("id", current.data.seller_id);
-    const identifierType =
-      current.data.verification_type === "identity"
-        ? "phone"
-        : current.data.verification_type === "business_registration"
-          ? "business_registration"
-          : current.data.verification_type === "social_account"
-            ? "social_account"
-            : current.data.verification_type === "payment_identity"
-              ? "payment_identity"
-              : "e_trust";
-    await supabase
-      .from("seller_identifiers")
-      .update({ verification_status: "verified" })
-      .eq("seller_id", current.data.seller_id)
-      .eq("type", identifierType);
   }
-  const reason = parsed.data.reviewer_notes ?? null;
-  const writes = await Promise.all([
-    supabase.from("moderation_actions").insert({
-      admin_user_id: adminId,
-      entity_type: "verification",
-      entity_id: id,
-      action,
-      reason,
-      metadata: { seller_id: current.data.seller_id },
-    }),
-    supabase.from("audit_logs").insert({
-      actor_id: adminId,
-      event: `admin.verification_${action}`,
-      entity_type: "seller_verification",
-      entity_id: id,
-      metadata: { seller_id: current.data.seller_id, reason },
-    }),
-  ]);
-  if (writes.some((result) => result.error))
-    return apiError(context, 500, "INTERNAL_ERROR", "Audit trail failed");
-  return context.json({ data: { id, status } });
+  return context.json({ data });
 }
 
 adminRoute.post("/verifications/:id/approve", (context) =>
@@ -234,30 +165,19 @@ adminRoute.post("/sellers/:id/suspend", async (context) => {
     return apiError(context, 400, "BAD_REQUEST", "Reason required");
   const supabase = createSupabaseClient(context.env);
   const sellerId = context.req.param("id") ?? "";
-  const adminId = context.get("user").id;
-  const updated = await supabase
-    .from("seller_profiles")
-    .update({ verification_status: "suspended" })
-    .eq("id", sellerId);
-  if (updated.error)
-    return apiError(context, 500, "INTERNAL_ERROR", "Suspend failed");
-  await Promise.all([
-    supabase.from("moderation_actions").insert({
-      admin_user_id: adminId,
-      entity_type: "seller",
-      entity_id: sellerId,
-      action: "suspend",
-      reason: parsed.data.reviewer_notes,
-    }),
-    supabase.from("audit_logs").insert({
-      actor_id: adminId,
-      event: "admin.seller_suspended",
-      entity_type: "seller_profile",
-      entity_id: sellerId,
-      metadata: { reason: parsed.data.reviewer_notes },
-    }),
-  ]);
-  return context.json({ data: { id: sellerId, status: "suspended" } });
+  const { data, error } = await supabase.rpc("admin_suspend_seller", {
+    p_seller_id: sellerId,
+    p_admin_id: context.get("user").id,
+    p_reason: parsed.data.reviewer_notes,
+  });
+  if (error)
+    return apiError(
+      context,
+      error.code === "P0002" ? 404 : 400,
+      error.code === "P0002" ? "NOT_FOUND" : "BAD_REQUEST",
+      error.message,
+    );
+  return context.json({ data });
 });
 
 adminRoute.get("/audit-logs", async (context) => {
