@@ -1,6 +1,7 @@
 export * from "./database.types";
 export * from "./enums";
 export * from "./api/auth";
+export * from "./api/customers";
 export * from "./api/orders";
 export * from "./api/products";
 export * from "./api/reports";
