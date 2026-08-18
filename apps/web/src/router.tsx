@@ -20,6 +20,7 @@ import { OrderEntryPage } from "./pages/order-entry";
 import { DataExportPage } from "./pages/data-export";
 import { SellerSectionPage } from "./pages/seller-section";
 import { ManualOrderPage } from "./pages/manual-order";
+import { OrderDetailPage, OrdersListPage } from "./pages/orders";
 
 export const router = createBrowserRouter([
   {
@@ -40,12 +41,12 @@ export const router = createBrowserRouter([
       { path: "/dashboard/products/:id", element: <ProductFormPage /> },
       { path: "/dashboard/orders/new", element: <OrderEntryPage /> },
       { path: "/dashboard/settings/export", element: <DataExportPage /> },
-      { path: "/dashboard/orders", element: <SellerSectionPage /> },
+      { path: "/dashboard/orders", element: <OrdersListPage /> },
       { path: "/dashboard/orders/new", element: <ManualOrderPage /> },
-      { path: "/dashboard/orders/:id", element: <SellerSectionPage /> },
-      { path: "/dashboard/products", element: <SellerSectionPage /> },
-      { path: "/dashboard/products/new", element: <SellerSectionPage /> },
-      { path: "/dashboard/products/:id", element: <SellerSectionPage /> },
+      { path: "/dashboard/orders/:id", element: <OrderDetailPage /> },
+      { path: "/dashboard/products", element: <ProductListPage /> },
+      { path: "/dashboard/products/new", element: <ProductFormPage /> },
+      { path: "/dashboard/products/:id", element: <ProductFormPage /> },
       { path: "/dashboard/finance", element: <SellerSectionPage /> },
       { path: "/dashboard/trust", element: <SellerSectionPage /> },
       { path: "/dashboard/settings", element: <SellerSectionPage /> },
