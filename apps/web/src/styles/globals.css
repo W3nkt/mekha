@@ -1866,3 +1866,7 @@ p {
     align-items: flex-start;
   }
 }
+.orders-page, .order-detail-page { display: grid; gap: 1rem; padding: 1rem 0 2rem; }
+.orders-search { min-height: 48px; border: 1px solid var(--neutral-300); border-radius: .75rem; padding: .7rem; font: inherit; }
+.order-tabs { display: flex; gap: .35rem; overflow-x: auto; }.order-tabs button { min-height: 44px; border: 0; border-radius: 999px; padding: .6rem .8rem; background: var(--neutral-100); white-space: nowrap; }.order-tabs button.is-active { background: var(--navy); color: #fff; }
+.order-list { display: grid; gap: .65rem; }.order-card { display: grid; gap: .35rem; padding: 1rem; border: 1px solid var(--neutral-300); border-radius: .85rem; color: inherit; text-decoration: none; }.order-card div { display: flex; justify-content: space-between; gap: 1rem; }.order-card span, .order-card small { color: var(--ink-soft); }.order-timeline { display: flex; gap: .3rem; overflow-x: auto; }.order-timeline span { min-width: max-content; padding: .5rem; border-bottom: 3px solid var(--neutral-300); color: var(--ink-soft); font-size: .8rem; }.order-timeline span.is-current { border-color: var(--navy); color: var(--navy); font-weight: 700; }.order-detail-card { display: grid; gap: .6rem; padding: 1rem; border: 1px solid var(--neutral-300); border-radius: .85rem; }.order-status-badge { padding: .5rem .75rem; border-radius: 999px; background: var(--neutral-100); }
