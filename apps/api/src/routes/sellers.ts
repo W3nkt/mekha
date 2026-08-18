@@ -15,6 +15,7 @@ import type { ApiEnv } from "../types";
 import { requireAuth } from "../middleware/auth";
 
 export const sellersRoute = new Hono<ApiEnv>();
+const csv = (rows: string[][]) => `\uFEFF${rows.map((row) => row.map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`).join(",")).join("\r\n")}\r\n`;
 
 const ownedSeller = async (context: Context<ApiEnv>) => {
   const sellerId = context.req.param("id") ?? "";
@@ -547,6 +548,16 @@ sellersRoute.get("/search", async (context) => {
       caution_level: caution.get(profile.id) ?? "insufficient_information",
     })),
   });
+});
+
+sellersRoute.get("/:id/export", requireAuth, async (context) => {
+  const sellerId = context.req.param("id"); const type = context.req.query("type") ?? "orders"; const from = context.req.query("from") ?? "1900-01-01"; const to = context.req.query("to") ?? "2999-12-31"; const supabase = createSupabaseClient(context.env);
+  const owner = await supabase.from("seller_profiles").select("id,business_name_lao,business_name").eq("id", sellerId).eq("owner_user_id", context.get("user").id).maybeSingle(); if (!owner.data) return apiError(context, 403, "FORBIDDEN", "Seller access required");
+  const result = await supabase.from("orders").select("id,created_at,amount,delivery_fee,payment_method,status,tracking_number,updated_at,product_snapshot").eq("seller_id", sellerId).gte("created_at", from).lte("created_at", `${to}T23:59:59.999Z`).order("created_at", { ascending: true }); if (result.error) return apiError(context, 500, "INTERNAL_ERROR", "Export failed");
+  const headers = { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename=khaidee-${type}.csv` };
+  if (type === "customers") { const customers = await supabase.from("customers").select("phone,name,province,district,order_count,updated_at").eq("seller_id", sellerId); if (customers.error) return apiError(context, 500, "INTERNAL_ERROR", "Export failed"); return new Response(csv([["customer_phone", "customer_name", "province", "district", "order_count", "total_spent", "last_order_date"], ...(customers.data ?? []).map((item) => [item.phone, item.name ?? "", item.province ?? "", item.district ?? "", String(item.order_count), "", item.updated_at.slice(0, 10)])]), { headers }); }
+  if (type === "monthly") { const months = new Map<string, [number, number, number, number]>(); for (const item of result.data ?? []) { const month = item.created_at.slice(0, 7); const current = months.get(month) ?? [0, 0, 0, 0]; current[0]++; current[1] += Number(item.amount); if (item.status === "returned") current[2]++; if (item.status === "disputed") current[3]++; months.set(month, current); } return new Response(csv([["month", "total_orders", "total_revenue", "total_cogs", "total_shipping", "net_profit", "returned_orders", "disputed_orders"], ...[...months.entries()].map(([month, value]) => [month, String(value[0]), String(value[1]), "", "", String(value[1]), String(value[2]), String(value[3])])]), { headers }); }
+  return new Response(`# ລາຍງານທຸລະກຳ KhaiDee / ຂາຍດີ\n# ຮ້ານ: ${owner.data.business_name_lao || owner.data.business_name}\n# ຊ່ວງວັນທີ: ${from} - ${to}\n${csv([["order_id", "date", "customer_phone", "product_name", "quantity", "unit_price", "total_amount", "shipping_fee", "payment_method", "status", "tracking_number", "settlement_date", "net_amount"], ...(result.data ?? []).map((item) => [item.id, new Date(item.created_at).toLocaleDateString("en-GB"), "", JSON.stringify(item.product_snapshot ?? ""), "", "", String(item.amount), String(item.delivery_fee), item.payment_method ?? "", item.status, item.tracking_number ?? "", item.status === "settled" ? item.updated_at : "", String(Number(item.amount) + Number(item.delivery_fee))])])}`, { headers });
 });
 
 sellersRoute.get("/:id", async (context) => {

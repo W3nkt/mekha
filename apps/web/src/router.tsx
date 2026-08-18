@@ -20,6 +20,7 @@ import { ManualOrderPage } from "./pages/manual-order";
 import { OrderDetailPage, OrdersListPage } from "./pages/orders";
 import { CustomerDetailPage, CustomersPage } from "./pages/customers";
 import { FinancePage } from "./pages/finance";
+import { ExportPage } from "./pages/export";
 
 export const router = createBrowserRouter([
   {
@@ -46,6 +47,7 @@ export const router = createBrowserRouter([
       { path: "/dashboard/settings", element: <SellerSectionPage /> },
       { path: "/dashboard/customers", element: <CustomersPage /> },
       { path: "/dashboard/customers/:id", element: <CustomerDetailPage /> },
+      { path: "/dashboard/settings/export", element: <ExportPage /> },
       { path: "/admin/verifications", element: <AdminVerificationsPage /> },
       {
         path: "/register/verification",
