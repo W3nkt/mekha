@@ -3,10 +3,17 @@ import { createMiddleware } from "hono/factory";
 
 import type { ApiEnv } from "../types";
 
+const pagesPreviewPattern =
+  /^https:\/\/(?:[a-z0-9-]+\.)?mekha-web\.pages\.dev$/;
+
 export const corsMiddleware = createMiddleware<ApiEnv>(
   async (context, next) => {
-    const middleware = cors({
-      origin: context.env.ALLOWED_ORIGIN,
+    const configuredOrigin = context.env.ALLOWED_ORIGIN;
+    return cors({
+      origin: (origin) =>
+        origin === configuredOrigin || pagesPreviewPattern.test(origin)
+          ? origin
+          : "",
       allowHeaders: ["Authorization", "Content-Type"],
       allowMethods: [
         "GET",
@@ -18,8 +25,6 @@ export const corsMiddleware = createMiddleware<ApiEnv>(
         "OPTIONS",
       ],
       maxAge: 86400,
-    });
-
-    return middleware(context, next);
+    })(context, next);
   },
 );

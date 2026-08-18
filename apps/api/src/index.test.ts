@@ -69,6 +69,17 @@ describe("Mekha API", () => {
     );
   });
 
+  it("allows Mekha Pages preview origins", async () => {
+    const previewOrigin = "https://agent-s0-foundation.mekha-web.pages.dev";
+    const response = await request("/v1/health", createEnv(), {
+      origin: previewOrigin,
+    });
+
+    expect(response.headers.get("access-control-allow-origin")).toBe(
+      previewOrigin,
+    );
+  });
+
   it("rejects a protected route without a token", async () => {
     const response = await request("/v1/orders", createEnv());
 
