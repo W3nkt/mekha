@@ -1311,6 +1311,35 @@ p {
   color: #fff;
   background: #a1281f;
 }
+.suspend-action {
+  width: 100%;
+  min-height: 40px;
+  border: 0;
+  background: transparent;
+  color: #a1281f;
+  font-weight: 800;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.admin-audit {
+  margin-top: 34px;
+  border-top: 1px solid #dbe4e1;
+}
+.admin-audit h2 {
+  margin: 24px 0 10px;
+}
+.admin-audit > div {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 0.8fr;
+  gap: 16px;
+  padding: 11px 0;
+  border-bottom: 1px solid #edf1f0;
+  font-size: 14px;
+}
+.admin-audit span,
+.admin-audit time {
+  color: #64748b;
+}
 @media (max-width: 850px) {
   .admin-review-grid {
     grid-template-columns: 1fr;

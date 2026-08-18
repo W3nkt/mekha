@@ -34,6 +34,14 @@ type Detail = QueueItem & {
     created_at: string;
   }>;
 };
+type Audit = {
+  id: string;
+  event: string;
+  entity_type: string | null;
+  created_at: string;
+  metadata: unknown;
+  users: { phone: string | null } | null;
+};
 
 export function AdminVerificationsPage() {
   const [token, setToken] = useState("");
@@ -45,6 +53,7 @@ export function AdminVerificationsPage() {
   const [total, setTotal] = useState(0);
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
+  const [audits, setAudits] = useState<Audit[]>([]);
   async function loadQueue(accessToken = token) {
     const response = await apiRequest<{ data: QueueItem[]; total: number }>(
       `/v1/admin/verifications?status=${status}&page=${page}${type ? `&type=${encodeURIComponent(type)}` : ""}`,
@@ -70,6 +79,11 @@ export function AdminVerificationsPage() {
       setToken(session.access_token);
       try {
         await loadQueue(session.access_token);
+        const audit = await apiRequest<{ data: Audit[] }>(
+          "/v1/admin/audit-logs",
+          { headers: { Authorization: `Bearer ${session.access_token}` } },
+        );
+        setAudits(audit.data);
       } catch (e) {
         setError(
           e instanceof ApiError && e.status === 403
@@ -90,6 +104,16 @@ export function AdminVerificationsPage() {
     });
     setSelected(null);
     setNote("");
+    await loadQueue();
+  }
+  async function suspend() {
+    if (!selected || !note.trim()) return setError("ກະລຸນາໃສ່ເຫດຜົນ");
+    await apiRequest(`/v1/admin/sellers/${selected.seller_id}/suspend`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ reviewer_notes: note }),
+    });
+    setSelected(null);
     await loadQueue();
   }
   return (
@@ -229,6 +253,9 @@ export function AdminVerificationsPage() {
                   Reject
                 </button>
               </div>
+              <button className="suspend-action" onClick={() => void suspend()}>
+                Suspend seller
+              </button>
               <details>
                 <summary>
                   Previous decisions ({selected.previous.length})
@@ -245,6 +272,16 @@ export function AdminVerificationsPage() {
           )}
         </aside>
       </div>
+      <section className="admin-audit">
+        <h2>Recent admin actions</h2>
+        {audits.slice(0, 20).map((row) => (
+          <div key={row.id}>
+            <strong>{row.event.replaceAll("_", " ")}</strong>
+            <span>{row.users?.phone ?? row.entity_type ?? "system"}</span>
+            <time>{new Date(row.created_at).toLocaleString()}</time>
+          </div>
+        ))}
+      </section>
     </section>
   );
 }
