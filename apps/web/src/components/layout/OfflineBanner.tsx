@@ -1,0 +1,3 @@
+import { useEffect, useState } from "react";
+import { registerSyncListeners } from "../../lib/sync";
+export function OfflineBanner() { const [offline, setOffline] = useState(() => !navigator.onLine); useEffect(() => { const onChange = () => setOffline(!navigator.onLine); window.addEventListener("online", onChange); window.addEventListener("offline", onChange); const cleanup = registerSyncListeners(); return () => { cleanup(); window.removeEventListener("online", onChange); window.removeEventListener("offline", onChange); }; }, []); return offline ? <div className="offline-banner" role="status">⚠ ບໍ່ມີການເຊື່ອມຕໍ່ອິນເຕີເນັດ — ຂໍ້ມູນຈະຖືກບັນທຶກໄວ້ຫຼັງ</div> : null; }
