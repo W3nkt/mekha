@@ -1,0 +1,12 @@
+const apiUrl = (process.env.SMOKE_API_URL || "https://mekha-api.wen-kt2020.workers.dev").replace(/\/$/, "");
+const checks = [];
+const check = async (name, fn) => { try { await fn(); checks.push(["PASS", name]); } catch (error) { checks.push(["FAIL", `${name}: ${error.message}`]); } };
+const expect = (value, message) => { if (!value) throw new Error(message); };
+await check("API health", async () => expect((await fetch(`${apiUrl}/v1/health`)).ok, "health unavailable"));
+await check("badge endpoint is public", async () => { const response = await fetch(`${apiUrl}/v1/sellers/not-a-uuid/badge`); expect([400, 404].includes(response.status), `HTTP ${response.status}`); });
+await check("widget endpoint is public", async () => { const response = await fetch(`${apiUrl}/v1/sellers/not-a-uuid/widget`); expect([400, 404].includes(response.status), `HTTP ${response.status}`); });
+await check("report submission is protected", async () => { const response = await fetch(`${apiUrl}/v1/reports`, { method: "POST", body: "{}" }); expect([400, 401, 403].includes(response.status), `HTTP ${response.status}`); });
+await check("admin reports queue is protected", async () => { const response = await fetch(`${apiUrl}/v1/admin/reports`); expect([401, 403].includes(response.status), `HTTP ${response.status}`); });
+await check("dispute export is protected", async () => { const response = await fetch(`${apiUrl}/v1/disputes/not-a-uuid/export`); expect([401, 403].includes(response.status), `HTTP ${response.status}`); });
+for (const [status, name] of checks) console.log(`${status.padEnd(4)} ${name}`);
+if (checks.some(([status]) => status === "FAIL")) process.exitCode = 1;

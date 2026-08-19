@@ -86,6 +86,11 @@ export function SellerSearchPage() {
   const [debouncedQuery, setDebouncedQuery] = useState(urlQuery.trim());
 
   useEffect(() => {
+    setInput(urlQuery);
+    setDebouncedQuery(urlQuery.trim());
+  }, [urlQuery]);
+
+  useEffect(() => {
     const timer = window.setTimeout(() => {
       const next = input.trim();
       setDebouncedQuery(next);
@@ -97,7 +102,7 @@ export function SellerSearchPage() {
   const type = detectSellerSearchType(debouncedQuery);
   const results = useQuery({
     queryKey: ["seller-search", debouncedQuery, type],
-    enabled: debouncedQuery.length > 0,
+    enabled: debouncedQuery.length >= 2,
     queryFn: () =>
       apiRequest<SellerSearchResponse>(
         `/v1/sellers/search?q=${encodeURIComponent(debouncedQuery)}&type=${type}`,
