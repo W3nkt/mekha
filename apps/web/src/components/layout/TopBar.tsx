@@ -28,7 +28,7 @@ export function TopBar() {
         className="language-button"
         onClick={changeLanguage}
         type="button"
-        aria-label={t("common.language")}
+        aria-label={`${t("common.language")}: ${current.toUpperCase()}`}
       >
         <Languages size={18} />
         <span>{current.toUpperCase()}</span>
