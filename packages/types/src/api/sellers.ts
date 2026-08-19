@@ -39,7 +39,7 @@ export const UpdateSellerSchema = CreateSellerSchema.omit({
 export type UpdateSeller = z.infer<typeof UpdateSellerSchema>;
 
 export const SellerSearchSchema = z.object({
-  q: z.string().trim().min(1).max(100),
+  q: z.string().trim().min(2).max(100),
   type: z.enum(["shop_name", "phone", "seller_id"]),
   limit: z.coerce.number().int().min(1).max(20).default(20),
 });
@@ -62,9 +62,14 @@ export const SellerSearchResponseSchema = z.object({
 });
 export type SellerSearchResponse = z.infer<typeof SellerSearchResponseSchema>;
 
-export const SellerExportSchema = z.object({
-  type: z.enum(["orders", "monthly", "customers"]),
-  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-});
+export const SellerExportSchema = z
+  .object({
+    type: z.enum(["orders", "monthly", "customers"]),
+    from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+    to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  })
+  .refine(({ from, to }) => !from || !to || from <= to, {
+    message: "from must be before or equal to to",
+    path: ["to"],
+  });
 export type SellerExport = z.infer<typeof SellerExportSchema>;

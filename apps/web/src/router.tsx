@@ -42,6 +42,16 @@ const AdminVerificationsPage = lazy(() =>
     default: m.AdminVerificationsPage,
   })),
 );
+const ReportProblemPage = lazy(() =>
+  import("./pages/report-problem").then((m) => ({
+    default: m.ReportProblemPage,
+  })),
+);
+const DashboardTrustPage = lazy(() =>
+  import("./pages/dashboard-trust").then((m) => ({
+    default: m.DashboardTrustPage,
+  })),
+);
 const SellerDashboardPage = lazy(() =>
   import("./pages/dashboard").then((m) => ({
     default: m.SellerDashboardPage,
@@ -59,6 +69,14 @@ const OrderEntryPage = lazy(() =>
 const DataExportPage = lazy(() =>
   import("./pages/data-export").then((m) => ({ default: m.DataExportPage })),
 );
+const SafeOrderCreatePage = lazy(() =>
+  import("./pages/safe-order").then((m) => ({
+    default: m.SafeOrderCreatePage,
+  })),
+);
+const SafeOrderPage = lazy(() =>
+  import("./pages/safe-order").then((m) => ({ default: m.SafeOrderPage })),
+);
 
 export const router = createBrowserRouter([
   {
@@ -68,6 +86,8 @@ export const router = createBrowserRouter([
       { path: "/search", element: <SellerSearchPage /> },
       { path: "/seller/:id", element: <SellerProfilePage /> },
       { path: "/s/:id", element: <SellerProfilePage /> },
+      { path: "/order/new", element: <SafeOrderCreatePage /> },
+      { path: "/order/:safeUrl", element: <SafeOrderPage /> },
       { path: "/login", element: <LoginPage /> },
       { path: "/register", element: <RegisterPhonePage /> },
       { path: "/register/verify", element: <RegisterVerifyPage /> },
@@ -80,6 +100,8 @@ export const router = createBrowserRouter([
       { path: "/dashboard/orders/new", element: <OrderEntryPage /> },
       { path: "/dashboard/settings/export", element: <DataExportPage /> },
       { path: "/admin/verifications", element: <AdminVerificationsPage /> },
+      { path: "/report-problem", element: <ReportProblemPage /> },
+      { path: "/dashboard/trust", element: <DashboardTrustPage /> },
       {
         path: "/register/verification",
         element: <ComingSoonPage section="verification" />,
