@@ -14,6 +14,7 @@ import { ordersRoute } from "./routes/orders";
 import { productsRoute } from "./routes/products";
 import { safeOrdersRoute } from "./routes/safe-orders";
 import { reviewsRoute } from "./routes/reviews";
+import { reportsRoute } from "./routes/reports";
 import { sellersRoute } from "./routes/sellers";
 import { trustRoute } from "./routes/trust";
 import type { ApiEnv } from "./types";
@@ -31,6 +32,7 @@ app.use("*", async (c, next) => {
 
 app.route("/v1/health", healthRoute);
 app.route("/v1", reviewsRoute);
+app.route("/v1", reportsRoute);
 app.use("/v1/sellers/*", publicRateLimit);
 app.use("/v1/trust/*", publicRateLimit);
 app.route("/v1/sellers", sellersRoute);
