@@ -6,6 +6,7 @@ import { requireAuth } from "../middleware/auth";
 import { authenticatedRateLimit } from "../middleware/rateLimit";
 import type { ApiEnv } from "../types";
 import { reportActionSchema } from "./reports";
+import { summarizeEvidence } from "../services/ai";
 
 export const adminRoute = new Hono<ApiEnv>();
 adminRoute.use(
@@ -238,4 +239,13 @@ adminRoute.post("/reports/:id/resolve", async (context) => {
   }
   await supabase.from("audit_logs").insert({ actor_id: context.get("user").id, event: `admin.report_${parsed.data.action}`, entity_type: "report", entity_id: id, metadata: { resolution: parsed.data.resolution ?? null } });
   return context.json({ data: updated.data });
+});
+
+adminRoute.post("/reports/:id/ai-summary", async (context) => {
+  const supabase = createSupabaseClient(context.env);
+  const report = await supabase.from("reports").select("id,report_type,description,evidence_paths,ai_classification").eq("id", context.req.param("id")).maybeSingle();
+  if (!report.data) return apiError(context, 404, "NOT_FOUND", "Report not found");
+  const summary = await summarizeEvidence(context.env, report.data);
+  if (!summary) return apiError(context, 503, "INTERNAL_ERROR", "AI summary unavailable");
+  return context.json({ data: { summary, ai: true } });
 });
