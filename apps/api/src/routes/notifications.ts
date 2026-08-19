@@ -1,0 +1,10 @@
+import { Hono } from "hono";
+import { z } from "zod";
+import { apiError } from "../lib/errors";
+import { createSupabaseClient } from "../lib/supabase";
+import { requireAuth } from "../middleware/auth";
+import type { ApiEnv } from "../types";
+export const notificationsRoute = new Hono<ApiEnv>();
+const subscriptionSchema = z.object({ subscription: z.object({ endpoint: z.string().url(), keys: z.object({ p256dh: z.string(), auth: z.string() }).optional() }) });
+notificationsRoute.post("/notifications/register", requireAuth, async (context) => { const parsed = subscriptionSchema.safeParse(await context.req.json().catch(() => null)); if (!parsed.success) return apiError(context, 400, "BAD_REQUEST", "Invalid push subscription"); const { error } = await createSupabaseClient(context.env).from("users").update({ fcm_token: JSON.stringify(parsed.data.subscription) } as never).eq("id", context.get("user").id); if (error) return apiError(context, 500, "INTERNAL_ERROR", "Notification registration failed"); return context.json({ data: { registered: true } }, 201); });
+notificationsRoute.delete("/notifications/register", requireAuth, async (context) => { await createSupabaseClient(context.env).from("users").update({ fcm_token: null } as never).eq("id", context.get("user").id); return context.json({ data: { registered: false } }); });

@@ -1157,6 +1157,7 @@ export type Database = {
       };
       users: {
         Row: {
+          fcm_token: string | null;
           created_at: string;
           email: string | null;
           id: string;
@@ -1166,6 +1167,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          fcm_token?: string | null;
           created_at?: string;
           email?: string | null;
           id?: string;
@@ -1175,6 +1177,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          fcm_token?: string | null;
           created_at?: string;
           email?: string | null;
           id?: string;
