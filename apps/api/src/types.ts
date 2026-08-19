@@ -6,6 +6,9 @@ export type ApiBindings = Cloudflare.Env & {
   DASHSCOPE_API_KEY?: string;
   QWEN_BASE_URL?: string;
   ANTHROPIC_API_KEY?: string;
+  WHATSAPP_PHONE_NUMBER_ID?: string;
+  WHATSAPP_ACCESS_TOKEN?: string;
+  WHATSAPP_OPT_OUT?: string;
   META_APP_ID?: string;
   META_APP_SECRET?: string;
   META_VERIFY_TOKEN?: string;

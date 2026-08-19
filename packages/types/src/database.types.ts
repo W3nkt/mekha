@@ -1242,6 +1242,7 @@ export type Database = {
           role: string;
           status: string;
           updated_at: string;
+          whatsapp_opted_out: boolean;
         };
         Insert: {
           created_at?: string;
@@ -1251,6 +1252,7 @@ export type Database = {
           role?: string;
           status?: string;
           updated_at?: string;
+          whatsapp_opted_out?: boolean;
         };
         Update: {
           created_at?: string;
@@ -1260,6 +1262,7 @@ export type Database = {
           role?: string;
           status?: string;
           updated_at?: string;
+          whatsapp_opted_out?: boolean;
         };
         Relationships: [];
       };
