@@ -271,6 +271,9 @@ export function SellerProfilePage() {
       </section>
 
       <section className="profile-section reviews-section">
+        {seller.average_rating !== null && (
+          <p className="review-summary">★ {seller.average_rating.toFixed(1)} / 5 · {verifiedReviews.length} verified reviews</p>
+        )}
         <p className="eyebrow">Buyer evidence</p>
         <h2>ຣີວິວຈາກຜູ້ຊື້</h2>
         {verifiedReviews.length === 0 && otherReviews.length === 0 && (

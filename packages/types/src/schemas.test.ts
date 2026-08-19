@@ -87,6 +87,9 @@ describe("shared API schemas", () => {
         description: "too short",
       }).success,
     ).toBe(false);
+    expect(
+      CreateReviewSchema.safeParse({ seller_id: crypto.randomUUID(), rating: 4 }).success,
+    ).toBe(true);
   });
 
   it("restricts verification uploads to safe document types", () => {

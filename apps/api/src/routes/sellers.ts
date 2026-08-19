@@ -1080,6 +1080,9 @@ sellersRoute.get("/:id", async (context) => {
       caution_level: engine.caution_level,
       trust_signals: engine.signals,
       ...engine.stats,
+      average_rating: reviewRatings.length
+        ? Math.round((reviewRatings.reduce((sum, rating) => sum + rating, 0) / reviewRatings.length) * 10) / 10
+        : null,
       reviews: [
         ...(verifiedReviews.data ?? []),
         ...(unverifiedReviews.data ?? []),
