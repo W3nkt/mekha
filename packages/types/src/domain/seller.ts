@@ -38,6 +38,7 @@ export type SellerTrustProfile = PublicSellerProfile & {
   months_active: number;
   on_time_rate: number | null;
   dispute_rate: number | null;
+  average_rating: number | null;
   reviews: PublicSellerReview[];
 };
 

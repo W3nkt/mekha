@@ -1,3 +1,5 @@
 # Copy to .dev.vars. Never commit real values.
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 QWEN_API_KEY=your-qwen-api-key
+DASHSCOPE_API_KEY=your-dashscope-api-key
+QWEN_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1

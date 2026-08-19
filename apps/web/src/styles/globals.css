@@ -2341,3 +2341,16 @@ p {
   margin: 0;
   font-size: 17px;
 }
+
+.offline-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 7px 16px;
+  background: #fff4d6;
+  color: #765400;
+  font-size: 13px;
+  text-align: center;
+}

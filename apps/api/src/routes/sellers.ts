@@ -687,7 +687,7 @@ sellersRoute.get("/:id/export", requireAuth, async (context) => {
 });
 
 const profileFields =
-  "id,business_name,business_name_lao,province,logo_url,verification_status" as const;
+  "id,business_name,business_name_lao,province,logo_url,verification_status,users!inner(status)" as const;
 
 const ogFont: Record<string, string[]> = {
   A: ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
@@ -766,6 +766,7 @@ sellersRoute.get("/search", async (context) => {
       .from("seller_profiles")
       .select(profileFields)
       .neq("verification_status", "suspended")
+      .eq("users.status", "active")
       .limit(limit);
 
   const profileResponses =
@@ -797,7 +798,7 @@ sellersRoute.get("/search", async (context) => {
     new Map(
       profileResponses
         .flatMap(({ data }) => data ?? [])
-        .map((profile) => [profile.id, profile]),
+        .map(({ users: _users, ...profile }) => [profile.id, profile]),
     ).values(),
   ).slice(0, limit);
 
@@ -865,9 +866,10 @@ sellersRoute.get("/:id/og-image", async (context) => {
     await Promise.all([
       supabase
         .from("seller_profiles")
-        .select("business_name,business_name_lao,province,verification_status")
+        .select("business_name,business_name_lao,province,verification_status,users!inner(status)")
         .eq("id", sellerId)
         .neq("verification_status", "suspended")
+        .eq("users.status", "active")
         .maybeSingle(),
       supabase
         .from("orders")
@@ -900,6 +902,56 @@ sellersRoute.get("/:id/og-image", async (context) => {
   });
 });
 
+const badgeForSeller = async (sellerId: string, supabase: ReturnType<typeof createSupabaseClient>) => {
+  const [{ data: seller }, { data: orders }, { count: disputes }] = await Promise.all([
+    supabase.from("seller_profiles").select("id,business_name,business_name_lao,verification_status,created_at").eq("id", sellerId).maybeSingle(),
+    supabase.from("orders").select("status,created_at,updated_at,terms").eq("seller_id", sellerId),
+    supabase.from("orders").select("id", { count: "exact", head: true }).eq("seller_id", sellerId).eq("status", "disputed"),
+  ]);
+  if (!seller) return null;
+  const completed = (orders ?? []).filter((order) => ["delivered", "settled"].includes(order.status));
+  const total = orders?.length ?? 0;
+  const onTime = completed.filter((order) => {
+    const deadline = (order.terms as { delivery_date?: string; agreed_delivery_date?: string } | null)?.delivery_date ?? (order.terms as { agreed_delivery_date?: string } | null)?.agreed_delivery_date;
+    return !deadline || new Date(order.updated_at) <= new Date(deadline);
+  }).length;
+  const disputeRate = total ? (disputes ?? 0) / total : null;
+  const identityApproved = seller.verification_status === "verified";
+  const status = !identityApproved ? "unverified" : completed.length >= 10 && (disputeRate === null || disputeRate < 0.05) ? "verified" : "partially_verified";
+  const monthsActive = Math.max(0, Math.floor((Date.now() - new Date(seller.created_at).getTime()) / (30 * 86_400_000)));
+  return { status, months_active: monthsActive, verified_order_count: completed.length, on_time_rate: completed.length ? onTime / completed.length : null, dispute_rate: disputeRate, seller };
+};
+
+sellersRoute.get("/:id/badge", async (context) => {
+  const sellerId = context.req.param("id");
+  if (!/^[0-9a-f-]{36}$/i.test(sellerId)) return apiError(context, 404, "NOT_FOUND", "Seller not found");
+  const badge = await badgeForSeller(sellerId, createSupabaseClient(context.env));
+  if (!badge) return apiError(context, 404, "NOT_FOUND", "Seller not found");
+  const base = new URL(context.req.url).origin;
+  return context.json({ data: { status: badge.status, months_active: badge.months_active, verified_order_count: badge.verified_order_count, on_time_rate: badge.on_time_rate, dispute_rate: badge.dispute_rate, badge_image_url: `${base}/v1/sellers/${sellerId}/badge.png`, widget_embed_code: `<iframe src="${base}/v1/sellers/${sellerId}/widget" width="300" height="100" frameborder="0" title="KhaiDee verified seller badge"></iframe>`, last_computed_at: new Date().toISOString() } });
+});
+
+sellersRoute.get("/:id/widget", async (context) => {
+  const badge = await badgeForSeller(context.req.param("id"), createSupabaseClient(context.env));
+  if (!badge) return apiError(context, 404, "NOT_FOUND", "Seller not found");
+  const name = (badge.seller.business_name || badge.seller.business_name_lao || "Seller").replace(/[^\x20-\x7E]/g, "");
+  return context.html(`<!doctype html><html><head><meta name="viewport" content="width=device-width"><style>body{margin:0;font:14px system-ui,sans-serif;color:#17324d}main{border:1px solid #dbe7ef;border-radius:12px;padding:14px;background:#fff}strong{color:#20764a;display:block;margin-bottom:8px}small{color:#557084}</style></head><body><main><strong>✓ KhaiDee Verified Seller</strong><div>${name}</div><small>${badge.verified_order_count} verified orders · ${badge.months_active} months active</small></main></body></html>`);
+});
+
+sellersRoute.get("/:id/badge.png", async (context) => {
+  const sellerId = context.req.param("id");
+  const badge = await badgeForSeller(sellerId, createSupabaseClient(context.env));
+  if (!badge) return apiError(context, 404, "NOT_FOUND", "Seller not found");
+  const pixels = new Uint8Array(1200 * 630 * 4);
+  drawRect(pixels, 0, 0, 1200, 630, [32, 112, 72, 255]);
+  drawText(pixels, "✓ KHAIDEE VERIFIED", 72, 95, 7, [255, 255, 255, 255]);
+  drawText(pixels, (badge.seller.business_name || badge.seller.business_name_lao || "Seller").replace(/[^\x20-\x7E]/g, "").slice(0, 28), 72, 245, 10, [255, 255, 255, 255]);
+  drawText(pixels, `${badge.verified_order_count} VERIFIED ORDERS`, 72, 390, 6, [224, 246, 231, 255]);
+  drawText(pixels, `${badge.months_active} MONTHS ACTIVE`, 72, 500, 5, [224, 246, 231, 255]);
+  const png = encodePng(pixels, 1200, 630);
+  return new Response(png.buffer as ArrayBuffer, { headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=60" } });
+});
+
 sellersRoute.get("/:id", async (context) => {
   const sellerId = context.req.param("id");
   if (
@@ -913,9 +965,10 @@ sellersRoute.get("/:id", async (context) => {
   const supabase = createSupabaseClient(context.env);
   const profileResponse = await supabase
     .from("seller_profiles")
-    .select("*")
+    .select("*,users!inner(status)")
     .eq("id", sellerId)
     .neq("verification_status", "suspended")
+    .eq("users.status", "active")
     .maybeSingle();
 
   if (profileResponse.error) {
@@ -1077,6 +1130,9 @@ sellersRoute.get("/:id", async (context) => {
       caution_level: engine.caution_level,
       trust_signals: engine.signals,
       ...engine.stats,
+      average_rating: reviewRatings.length
+        ? Math.round((reviewRatings.reduce((sum, rating) => sum + rating, 0) / reviewRatings.length) * 10) / 10
+        : null,
       reviews: [
         ...(verifiedReviews.data ?? []),
         ...(unverifiedReviews.data ?? []),

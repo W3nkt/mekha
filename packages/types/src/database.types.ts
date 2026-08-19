@@ -39,6 +39,84 @@ export type Database = {
   };
   public: {
     Tables: {
+      facebook_integrations: {
+        Row: {
+          id: string;
+          seller_id: string;
+          page_id: string;
+          page_name: string | null;
+          encrypted_page_access_token: string;
+          status: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          seller_id: string;
+          page_id: string;
+          page_name?: string | null;
+          encrypted_page_access_token: string;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          seller_id?: string;
+          page_id?: string;
+          page_name?: string | null;
+          encrypted_page_access_token?: string;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      facebook_messages: {
+        Row: {
+          id: string;
+          integration_id: string;
+          external_message_id: string;
+          source: string;
+          sender_name: string | null;
+          sender_profile_url: string | null;
+          message_text: string;
+          post_id: string | null;
+          intent_detected: boolean;
+          order_id: string | null;
+          raw_payload: Json;
+          received_at: string;
+        };
+        Insert: {
+          id?: string;
+          integration_id: string;
+          external_message_id: string;
+          source: string;
+          sender_name?: string | null;
+          sender_profile_url?: string | null;
+          message_text: string;
+          post_id?: string | null;
+          intent_detected?: boolean;
+          order_id?: string | null;
+          raw_payload?: Json;
+          received_at?: string;
+        };
+        Update: {
+          id?: string;
+          integration_id?: string;
+          external_message_id?: string;
+          source?: string;
+          sender_name?: string | null;
+          sender_profile_url?: string | null;
+          message_text?: string;
+          post_id?: string | null;
+          intent_detected?: boolean;
+          order_id?: string | null;
+          raw_payload?: Json;
+          received_at?: string;
+        };
+        Relationships: [];
+      };
       audit_logs: {
         Row: {
           actor_id: string | null;
@@ -1165,6 +1243,7 @@ export type Database = {
           role: string;
           status: string;
           updated_at: string;
+          whatsapp_opted_out: boolean;
         };
         Insert: {
           fcm_token?: string | null;
@@ -1175,6 +1254,7 @@ export type Database = {
           role?: string;
           status?: string;
           updated_at?: string;
+          whatsapp_opted_out?: boolean;
         };
         Update: {
           fcm_token?: string | null;
@@ -1185,6 +1265,7 @@ export type Database = {
           role?: string;
           status?: string;
           updated_at?: string;
+          whatsapp_opted_out?: boolean;
         };
         Relationships: [];
       };
