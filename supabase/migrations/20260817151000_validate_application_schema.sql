@@ -21,6 +21,8 @@ declare
     'subscriptions',
     'moderation_actions',
     'audit_logs'
+    ,'facebook_integrations'
+    ,'facebook_messages'
   ];
   required_indexes constant text[] := array[
     'idx_seller_profiles_owner',
@@ -36,6 +38,7 @@ declare
     'idx_audit_logs_actor',
     'idx_audit_logs_entity',
     'idx_sync_queue_user'
+    ,'facebook_messages_integration_received_idx'
   ];
   missing_count integer;
 begin

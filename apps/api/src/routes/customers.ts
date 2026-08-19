@@ -11,6 +11,25 @@ export const customersRoute = new Hono<ApiEnv>();
 
 customersRoute.use("*", requireAuth, authenticatedRateLimit);
 
+customersRoute.get("/", async (context) => {
+  const supabase = createSupabaseClient(context.env);
+  const seller = await supabase
+    .from("seller_profiles")
+    .select("id")
+    .eq("owner_user_id", context.get("user").id)
+    .maybeSingle();
+  if (seller.error) return apiError(context, 500, "INTERNAL_ERROR", "Seller lookup failed");
+  if (!seller.data) return apiError(context, 403, "FORBIDDEN", "Seller profile required");
+  const { data, error } = await supabase
+    .from("customers")
+    .select("id,phone,name,province,district,village_landmark,gps_lat,gps_lng,order_count")
+    .eq("seller_id", seller.data.id)
+    .order("updated_at", { ascending: false })
+    .limit(100);
+  if (error) return apiError(context, 500, "INTERNAL_ERROR", "Customers unavailable");
+  return context.json({ data });
+});
+
 customersRoute.get("/search", async (context) => {
   const parsed = CustomerSearchSchema.safeParse(context.req.query());
   if (!parsed.success)

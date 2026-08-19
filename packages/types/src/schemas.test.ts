@@ -5,6 +5,8 @@ import {
   CreateReviewSchema,
   CreateSellerSchema,
   RequestOtpSchema,
+  SellerSearchSchema,
+  SellerExportSchema,
   TrustCheckSchema,
   VerifyOtpSchema,
   VerificationUploadSchema,
@@ -35,6 +37,21 @@ describe("shared API schemas", () => {
         query_value: "test",
       }),
     ).toThrow();
+  });
+
+  it("requires at least two characters for public seller search", () => {
+    expect(
+      SellerSearchSchema.safeParse({ q: "ຮ", type: "shop_name" }).success,
+    ).toBe(false);
+    expect(
+      SellerSearchSchema.safeParse({ q: "ຮ້ານ", type: "shop_name" }).success,
+    ).toBe(true);
+  });
+
+  it("rejects inverted export date ranges", () => {
+    expect(
+      SellerExportSchema.safeParse({ type: "orders", from: "2026-08-20", to: "2026-08-01" }).success,
+    ).toBe(false);
   });
 
   it("validates OTP requests and verification", () => {
