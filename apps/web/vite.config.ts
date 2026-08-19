@@ -46,6 +46,18 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom", "react-router-dom"],
+          query: ["@tanstack/react-query"],
+          offline: ["dexie"],
+          i18n: ["i18next", "react-i18next", "i18next-browser-languagedetector"],
+        },
+      },
+    },
+  },
   server: { port: 5173 },
   preview: { port: 4173 },
 });

@@ -1,0 +1,18 @@
+name: Lighthouse CI
+on: [push]
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: corepack enable && corepack pnpm install --frozen-lockfile
+      - run: corepack pnpm --filter @mekha/web build
+      - uses: treosh/lighthouse-ci-action@v12
+        with:
+          urls: |
+            http://localhost:4173/
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          configPath: ./lighthouserc.json
