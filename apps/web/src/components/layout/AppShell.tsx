@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 
 import { BottomNav } from "./BottomNav";
@@ -10,7 +11,9 @@ export function AppShell() {
     <div className="app-shell">
       <TopBar />
       <main className="app-main">
-        <Outlet />
+        <Suspense fallback={null}>
+          <Outlet />
+        </Suspense>
       </main>
       <BottomNav />
       <UpdateBanner />

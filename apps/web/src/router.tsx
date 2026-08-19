@@ -1,23 +1,64 @@
+import { lazy } from "react";
 import { createBrowserRouter } from "react-router-dom";
 
 import App from "./App";
-import { ComingSoonPage } from "./pages/coming-soon";
 import { SellerSearchPage } from "./pages/search";
-import { LoginPage } from "./pages/login";
-import { ComponentsPage } from "./pages/dev-components";
-import { NotFoundPage } from "./pages/404";
-import { SellerProfilePage } from "./pages/seller-profile";
-import {
-  RegisterPhonePage,
-  RegisterProfilePage,
-  RegisterVerifyPage,
-} from "./pages/register";
-import { SellerVerificationPage } from "./pages/seller-verification";
-import { AdminVerificationsPage } from "./pages/admin-verifications";
-import { SellerDashboardPage } from "./pages/dashboard";
-import { ProductFormPage, ProductListPage } from "./pages/products";
-import { OrderEntryPage } from "./pages/order-entry";
-import { DataExportPage } from "./pages/data-export";
+
+const ComingSoonPage = lazy(() =>
+  import("./pages/coming-soon").then((m) => ({ default: m.ComingSoonPage })),
+);
+const LoginPage = lazy(() =>
+  import("./pages/login").then((m) => ({ default: m.LoginPage })),
+);
+const ComponentsPage = lazy(() =>
+  import("./pages/dev-components").then((m) => ({ default: m.ComponentsPage })),
+);
+const NotFoundPage = lazy(() =>
+  import("./pages/404").then((m) => ({ default: m.NotFoundPage })),
+);
+const SellerProfilePage = lazy(() =>
+  import("./pages/seller-profile").then((m) => ({
+    default: m.SellerProfilePage,
+  })),
+);
+const RegisterPhonePage = lazy(() =>
+  import("./pages/register").then((m) => ({ default: m.RegisterPhonePage })),
+);
+const RegisterVerifyPage = lazy(() =>
+  import("./pages/register").then((m) => ({ default: m.RegisterVerifyPage })),
+);
+const RegisterProfilePage = lazy(() =>
+  import("./pages/register").then((m) => ({
+    default: m.RegisterProfilePage,
+  })),
+);
+const SellerVerificationPage = lazy(() =>
+  import("./pages/seller-verification").then((m) => ({
+    default: m.SellerVerificationPage,
+  })),
+);
+const AdminVerificationsPage = lazy(() =>
+  import("./pages/admin-verifications").then((m) => ({
+    default: m.AdminVerificationsPage,
+  })),
+);
+const SellerDashboardPage = lazy(() =>
+  import("./pages/dashboard").then((m) => ({
+    default: m.SellerDashboardPage,
+  })),
+);
+const ProductListPage = lazy(() =>
+  import("./pages/products").then((m) => ({ default: m.ProductListPage })),
+);
+const ProductFormPage = lazy(() =>
+  import("./pages/products").then((m) => ({ default: m.ProductFormPage })),
+);
+const OrderEntryPage = lazy(() =>
+  import("./pages/order-entry").then((m) => ({ default: m.OrderEntryPage })),
+);
+const DataExportPage = lazy(() =>
+  import("./pages/data-export").then((m) => ({ default: m.DataExportPage })),
+);
 
 export const router = createBrowserRouter([
   {
