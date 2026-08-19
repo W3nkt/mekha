@@ -7,6 +7,7 @@ import { corsMiddleware } from "./middleware/cors";
 import { publicRateLimit } from "./middleware/rateLimit";
 import { adminRoute } from "./routes/admin";
 import { customersRoute } from "./routes/customers";
+import { facebookRoute } from "./routes/facebook";
 import { healthRoute } from "./routes/health";
 import { ordersRoute } from "./routes/orders";
 import { productsRoute } from "./routes/products";
@@ -32,6 +33,14 @@ app.route("/v1/sellers", sellersRoute);
 app.route("/v1/orders", ordersRoute);
 app.route("/v1/products", productsRoute);
 app.route("/v1/customers", customersRoute);
+app.route("/v1/facebook", facebookRoute);
+// Meta requires the webhook at this canonical path. Internally the same
+// route is also available under /v1/facebook/webhook for local testing.
+app.all("/v1/webhooks/facebook", async (context) => {
+  const target = new URL(context.req.url);
+  target.pathname = "/webhook";
+  return facebookRoute.fetch(new Request(target, context.req.raw), context.env, context.executionCtx);
+});
 app.route("/v1/trust", trustRoute);
 app.route("/v1/admin", adminRoute);
 

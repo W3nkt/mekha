@@ -47,6 +47,7 @@ const paymentLabels: Record<PaymentMethod, string> = {
 async function syncPendingOrders(token: string) {
   const pending = await offlineDb.pendingOrders.orderBy("createdAt").toArray();
   for (const order of pending) {
+    if (order.requiresReview || order.attempts >= 3) continue;
     try {
       await apiRequest("/v1/orders", {
         method: "POST",
@@ -54,10 +55,29 @@ async function syncPendingOrders(token: string) {
         body: JSON.stringify(order.payload),
       });
       await offlineDb.pendingOrders.delete(order.localId);
+      await offlineDb.syncQueue
+        .where("entityId")
+        .equals(order.localId)
+        .modify({ syncedAt: new Date().toISOString() });
+      await offlineDb.orderEvents
+        .where("orderId")
+        .equals(order.localId)
+        .modify({ synced: true });
     } catch {
+      const attempts = order.attempts + 1;
       await offlineDb.pendingOrders.update(order.localId, {
-        attempts: order.attempts + 1,
+        attempts,
+        requiresReview: attempts >= 3,
+        lastError: attempts >= 3 ? "Maximum sync attempts reached" : "Sync failed",
       });
+      await offlineDb.syncQueue
+        .where("entityId")
+        .equals(order.localId)
+        .modify({
+          attempts,
+          requiresReview: attempts >= 3,
+          lastError: attempts >= 3 ? "Maximum sync attempts reached" : "Sync failed",
+        });
     }
   }
 }
@@ -127,6 +147,16 @@ export function OrderEntryPage() {
         await offlineDb.products.bulkPut(response.data);
       } catch {
         setProducts(await offlineDb.products.toArray());
+      }
+
+      try {
+        const customers = await apiRequest<{ data: CachedCustomer[] }>(
+          "/v1/customers",
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        await offlineDb.customers.bulkPut(customers.data);
+      } catch {
+        // Cached customers remain available when prefetch is unavailable.
       }
 
       if (supabase) {
@@ -309,11 +339,30 @@ export function OrderEntryPage() {
     } catch (err) {
       const isNetworkError = !(err instanceof ApiError);
       if (isNetworkError || !isOnline) {
+        const localId = crypto.randomUUID();
+        const createdAt = new Date().toISOString();
         await offlineDb.pendingOrders.add({
-          localId: crypto.randomUUID(),
+          localId,
           payload,
-          createdAt: new Date().toISOString(),
+          createdAt,
           attempts: 0,
+        });
+        await offlineDb.orderEvents.add({
+          id: crypto.randomUUID(),
+          orderId: localId,
+          type: "created",
+          payload: payload as unknown as Record<string, unknown>,
+          createdAt,
+          synced: false,
+        });
+        await offlineDb.syncQueue.add({
+          id: crypto.randomUUID(),
+          entityType: "order",
+          entityId: localId,
+          payload: payload as unknown as Record<string, unknown>,
+          attempts: 0,
+          syncedAt: null,
+          createdAt,
         });
         setSuccess({ friendlyId: "", queued: true });
       } else {

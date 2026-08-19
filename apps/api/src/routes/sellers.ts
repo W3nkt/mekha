@@ -687,7 +687,7 @@ sellersRoute.get("/:id/export", requireAuth, async (context) => {
 });
 
 const profileFields =
-  "id,business_name,business_name_lao,province,logo_url,verification_status" as const;
+  "id,business_name,business_name_lao,province,logo_url,verification_status,users!inner(status)" as const;
 
 const ogFont: Record<string, string[]> = {
   A: ["01110", "10001", "10001", "11111", "10001", "10001", "10001"],
@@ -766,6 +766,7 @@ sellersRoute.get("/search", async (context) => {
       .from("seller_profiles")
       .select(profileFields)
       .neq("verification_status", "suspended")
+      .eq("users.status", "active")
       .limit(limit);
 
   const profileResponses =
@@ -797,7 +798,7 @@ sellersRoute.get("/search", async (context) => {
     new Map(
       profileResponses
         .flatMap(({ data }) => data ?? [])
-        .map((profile) => [profile.id, profile]),
+        .map(({ users: _users, ...profile }) => [profile.id, profile]),
     ).values(),
   ).slice(0, limit);
 
@@ -865,9 +866,10 @@ sellersRoute.get("/:id/og-image", async (context) => {
     await Promise.all([
       supabase
         .from("seller_profiles")
-        .select("business_name,business_name_lao,province,verification_status")
+        .select("business_name,business_name_lao,province,verification_status,users!inner(status)")
         .eq("id", sellerId)
         .neq("verification_status", "suspended")
+        .eq("users.status", "active")
         .maybeSingle(),
       supabase
         .from("orders")
@@ -913,9 +915,10 @@ sellersRoute.get("/:id", async (context) => {
   const supabase = createSupabaseClient(context.env);
   const profileResponse = await supabase
     .from("seller_profiles")
-    .select("*")
+    .select("*,users!inner(status)")
     .eq("id", sellerId)
     .neq("verification_status", "suspended")
+    .eq("users.status", "active")
     .maybeSingle();
 
   if (profileResponse.error) {
