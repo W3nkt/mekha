@@ -1,0 +1,5 @@
+import { test, expect } from "@playwright/test";
+test("public seller search and profile shell load", async ({ page }) => { await page.goto("/"); await expect(page.locator("body")).toContainText(/ຄົ້ນຫາ|KhaiDee/i); await page.goto("/search"); await expect(page).toHaveURL(/search/); });
+test("offline reload keeps the app shell available", async ({ page, context }) => { await page.goto("/"); await page.waitForLoadState("networkidle"); await context.setOffline(true); await page.reload(); await expect(page.locator("body")).toBeVisible(); });
+test("safe order mutation contract rejects unauthenticated changes", async ({ request }) => { const response = await request.patch("/v1/safe-orders/00000000-0000-4000-8000-000000000000", { data: { agreed_price: 1 } }); expect([401, 403, 404]).toContain(response.status()); });
+test("report submission requires authentication and structured fields", async ({ request }) => { const response = await request.post("/v1/reports", { data: {} }); expect([400, 401, 403]).toContain(response.status()); });

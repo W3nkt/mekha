@@ -25,6 +25,7 @@
     "db:types": "supabase gen types typescript --linked > packages/types/src/database.types.ts"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@supabase/supabase-js": "^2.112.3",
     "prettier": "^3.6.2",
     "supabase": "^2.114.0",
