@@ -1,0 +1,11 @@
+const webUrl = (process.env.SMOKE_WEB_URL || "http://127.0.0.1:4173").replace(/\/$/, "");
+const apiUrl = (process.env.SMOKE_API_URL || "https://mekha-api.wen-kt2020.workers.dev").replace(/\/$/, "");
+const checks = [];
+const check = async (name, fn) => { try { await fn(); checks.push(["PASS", name]); } catch (error) { checks.push(["FAIL", `${name}: ${error.message}`]); } };
+const expect = (value, message) => { if (!value) throw new Error(message); };
+await check("API health", async () => expect((await fetch(`${apiUrl}/v1/health`)).ok, "health unavailable"));
+await check("web shell", async () => { const response = await fetch(webUrl); expect(response.ok, `HTTP ${response.status}`); const html = await response.text(); expect(html.includes("id=\"root\""), "root missing"); });
+await check("service worker manifest", async () => { const response = await fetch(`${webUrl}/sw.js`); expect(response.ok, `HTTP ${response.status}`); });
+await check("manifest", async () => { const response = await fetch(`${webUrl}/manifest.webmanifest`); expect(response.ok, `HTTP ${response.status}`); });
+for (const [status, name] of checks) console.log(`${status.padEnd(4)} ${name}`);
+if (checks.some(([status]) => status === "FAIL")) process.exitCode = 1;
