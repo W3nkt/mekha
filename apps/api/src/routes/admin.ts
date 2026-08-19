@@ -5,6 +5,8 @@ import { createSupabaseClient } from "../lib/supabase";
 import { requireAuth } from "../middleware/auth";
 import { authenticatedRateLimit } from "../middleware/rateLimit";
 import type { ApiEnv } from "../types";
+import { reportActionSchema } from "./reports";
+import { summarizeEvidence } from "../services/ai";
 
 export const adminRoute = new Hono<ApiEnv>();
 adminRoute.use(
@@ -193,4 +195,57 @@ adminRoute.get("/audit-logs", async (context) => {
   if (error)
     return apiError(context, 500, "INTERNAL_ERROR", "Audit log failed");
   return context.json({ data });
+});
+
+const reportQuerySchema = z.object({
+  status: z.enum(["pending", "under_review", "resolved", "dismissed"]).default("pending"),
+  report_type: z.string().optional(),
+  seller_id: z.string().uuid().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+});
+
+adminRoute.get("/reports", async (context) => {
+  const parsed = reportQuerySchema.safeParse(context.req.query());
+  if (!parsed.success) return apiError(context, 400, "BAD_REQUEST", "Invalid report filters");
+  const { status, report_type, seller_id, page } = parsed.data;
+  let query = createSupabaseClient(context.env).from("reports").select("id,seller_id,order_id,report_type,description,evidence_paths,status,ai_classification,created_at,seller_profiles(business_name,business_name_lao)", { count: "exact" }).eq("status", status).order("created_at", { ascending: true }).range((page - 1) * 20, page * 20 - 1);
+  if (report_type) query = query.eq("report_type", report_type);
+  if (seller_id) query = query.eq("seller_id", seller_id);
+  const { data, count, error } = await query;
+  if (error) return apiError(context, 500, "INTERNAL_ERROR", "Report queue failed");
+  return context.json({ data: data ?? [], page, page_size: 20, total: count ?? 0 });
+});
+
+adminRoute.get("/reports/:id", async (context) => {
+  const supabase = createSupabaseClient(context.env);
+  const { data, error } = await supabase.from("reports").select("*,seller_profiles(*),users!reports_reporter_id_fkey(phone)").eq("id", context.req.param("id")).maybeSingle();
+  if (error) return apiError(context, 500, "INTERNAL_ERROR", "Report detail failed");
+  if (!data) return apiError(context, 404, "NOT_FOUND", "Report not found");
+  return context.json({ data });
+});
+
+adminRoute.post("/reports/:id/resolve", async (context) => {
+  const parsed = reportActionSchema.safeParse(await context.req.json().catch(() => null));
+  if (!parsed.success) return apiError(context, 400, "BAD_REQUEST", "Invalid moderation action");
+  const supabase = createSupabaseClient(context.env);
+  const id = context.req.param("id");
+  const report = await supabase.from("reports").select("id,seller_id,report_type,status").eq("id", id).maybeSingle();
+  if (!report.data) return apiError(context, 404, "NOT_FOUND", "Report not found");
+  const status = parsed.data.action === "escalate" ? "under_review" : parsed.data.action === "dismiss" ? "dismissed" : "resolved";
+  const updated = await supabase.from("reports").update({ status } as never).eq("id", id).select("id,status,seller_id").single();
+  if (updated.error) return apiError(context, 500, "INTERNAL_ERROR", "Report update failed");
+  if (parsed.data.action === "substantiate") {
+    await supabase.from("risk_signals").insert({ seller_id: report.data.seller_id, signal_type: "MULTIPLE_REPORTS", severity: "critical", source_type: "report", evidence_id: report.data.id } as never);
+  }
+  await supabase.from("audit_logs").insert({ actor_id: context.get("user").id, event: `admin.report_${parsed.data.action}`, entity_type: "report", entity_id: id, metadata: { resolution: parsed.data.resolution ?? null } });
+  return context.json({ data: updated.data });
+});
+
+adminRoute.post("/reports/:id/ai-summary", async (context) => {
+  const supabase = createSupabaseClient(context.env);
+  const report = await supabase.from("reports").select("id,report_type,description,evidence_paths,ai_classification").eq("id", context.req.param("id")).maybeSingle();
+  if (!report.data) return apiError(context, 404, "NOT_FOUND", "Report not found");
+  const summary = await summarizeEvidence(context.env, report.data);
+  if (!summary) return apiError(context, 503, "INTERNAL_ERROR", "AI summary unavailable");
+  return context.json({ data: { summary, ai: true } });
 });

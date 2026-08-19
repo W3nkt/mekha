@@ -5,6 +5,8 @@ import {
   CreateReviewSchema,
   CreateSellerSchema,
   RequestOtpSchema,
+  SellerSearchSchema,
+  SellerExportSchema,
   TrustCheckSchema,
   VerifyOtpSchema,
   VerificationUploadSchema,
@@ -37,6 +39,21 @@ describe("shared API schemas", () => {
     ).toThrow();
   });
 
+  it("requires at least two characters for public seller search", () => {
+    expect(
+      SellerSearchSchema.safeParse({ q: "ຮ", type: "shop_name" }).success,
+    ).toBe(false);
+    expect(
+      SellerSearchSchema.safeParse({ q: "ຮ້ານ", type: "shop_name" }).success,
+    ).toBe(true);
+  });
+
+  it("rejects inverted export date ranges", () => {
+    expect(
+      SellerExportSchema.safeParse({ type: "orders", from: "2026-08-20", to: "2026-08-01" }).success,
+    ).toBe(false);
+  });
+
   it("validates OTP requests and verification", () => {
     expect(
       RequestOtpSchema.safeParse({ phone: "+8562055555555" }).success,
@@ -60,8 +77,10 @@ describe("shared API schemas", () => {
     ).toBe(true);
     expect(
       CreateReportSchema.safeParse({
+        seller_id: crypto.randomUUID(),
         report_type: "other",
-        description: "A sufficiently detailed report",
+        description: "A sufficiently detailed report with enough context to be reviewed safely.",
+        evidence_paths: ["reports/example.png"],
       }).success,
     ).toBe(true);
     expect(
@@ -70,6 +89,9 @@ describe("shared API schemas", () => {
         description: "too short",
       }).success,
     ).toBe(false);
+    expect(
+      CreateReviewSchema.safeParse({ seller_id: crypto.randomUUID(), rating: 4 }).success,
+    ).toBe(true);
   });
 
   it("restricts verification uploads to safe document types", () => {
