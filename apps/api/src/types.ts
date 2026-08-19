@@ -3,7 +3,17 @@ import type { User } from "@supabase/supabase-js";
 export type ApiBindings = Cloudflare.Env & {
   SUPABASE_SERVICE_ROLE_KEY: string;
   QWEN_API_KEY: string;
+  DASHSCOPE_API_KEY?: string;
+  QWEN_BASE_URL?: string;
+  ANTHROPIC_API_KEY?: string;
   WHATSAPP_PHONE_NUMBER_ID?: string;
+  WHATSAPP_ACCESS_TOKEN?: string;
+  WHATSAPP_OPT_OUT?: string;
+  META_APP_ID?: string;
+  META_APP_SECRET?: string;
+  META_VERIFY_TOKEN?: string;
+  META_TOKEN_ENCRYPTION_KEY?: string;
+  META_REDIRECT_URI?: string;
 };
 
 export type ApiVariables = {
