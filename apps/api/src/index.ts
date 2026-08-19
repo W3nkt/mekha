@@ -78,3 +78,9 @@ app.onError((error, c) => {
 });
 
 export default app;
+
+export const scheduled = async (controller: ScheduledController, env: ApiEnv["Bindings"]) => {
+  // Badge metrics are computed from source-of-truth orders on read. The daily
+  // trigger provides an auditable heartbeat for deployments and future caching.
+  console.log(JSON.stringify({ event: "badge.recompute", cron: controller.cron, at: new Date(controller.scheduledTime).toISOString(), environment: env.ENVIRONMENT }));
+};
