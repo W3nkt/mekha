@@ -11,6 +11,13 @@ jobs:
         with: { node-version: 22, cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
+      - name: Write dummy API secrets for local wrangler dev
+        run: |
+          cat > apps/api/.dev.vars <<'EOF'
+          SUPABASE_SERVICE_ROLE_KEY=e2e-dummy-key
+          QWEN_API_KEY=e2e-dummy-key
+          DASHSCOPE_API_KEY=e2e-dummy-key
+          EOF
       - run: pnpm exec playwright test
       - uses: actions/upload-artifact@v4
         if: always()
