@@ -83,9 +83,17 @@ export const evidencePdf = (lines: string[]) => {
 export const disputesRoute = new Hono<ApiEnv>();
 disputesRoute.get("/:id/export", requireAuth, async (context) => {
   const supabase = createSupabaseClient(context.env);
-  const dispute = await supabase.from("disputes").select("id,order_id,status,summary,created_at,orders(friendly_id,amount,delivery_fee,status,created_at,buyer_confirmed_at,seller_confirmed_at)").eq("id", context.req.param("id")).maybeSingle();
+  const dispute = await supabase.from("disputes").select("id,order_id,status,summary,created_at,orders(friendly_id,amount,delivery_fee,status,created_at,buyer_confirmed_at,seller_confirmed_at,seller_id)").eq("id", context.req.param("id")).maybeSingle();
   if (dispute.error) return apiError(context, 500, "INTERNAL_ERROR", "Dispute lookup failed");
   if (!dispute.data) return apiError(context, 404, "NOT_FOUND", "Dispute not found");
+  const requester = context.get("user").id;
+  const [ownedSeller, adminUser] = await Promise.all([
+    supabase.from("seller_profiles").select("id").eq("owner_user_id", requester).eq("id", dispute.data.orders?.seller_id ?? "").maybeSingle(),
+    supabase.from("users").select("role,status").eq("id", requester).maybeSingle(),
+  ]);
+  const isOwningSeller = !!ownedSeller.data;
+  const isActiveAdmin = adminUser.data?.role === "admin" && adminUser.data.status === "active";
+  if (!isOwningSeller && !isActiveAdmin) return apiError(context, 403, "FORBIDDEN", "Not authorized for this dispute");
   const evidence = await supabase.from("order_evidence").select("type,file_hash,uploaded_by,created_at").eq("order_id", dispute.data.order_id).order("created_at", { ascending: true });
   if (evidence.error) return apiError(context, 500, "INTERNAL_ERROR", "Evidence lookup failed");
   const order = dispute.data.orders;
