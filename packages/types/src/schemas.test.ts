@@ -77,8 +77,10 @@ describe("shared API schemas", () => {
     ).toBe(true);
     expect(
       CreateReportSchema.safeParse({
+        seller_id: crypto.randomUUID(),
         report_type: "other",
-        description: "A sufficiently detailed report",
+        description: "A sufficiently detailed report with enough context to be reviewed safely.",
+        evidence_paths: ["reports/example.png"],
       }).success,
     ).toBe(true);
     expect(

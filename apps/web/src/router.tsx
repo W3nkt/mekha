@@ -14,6 +14,7 @@ import {
 } from "./pages/register";
 import { SellerVerificationPage } from "./pages/seller-verification";
 import { AdminVerificationsPage } from "./pages/admin-verifications";
+import { ReportProblemPage } from "./pages/report-problem";
 import { SellerDashboardPage } from "./pages/dashboard";
 import { ProductFormPage, ProductListPage } from "./pages/products";
 import { OrderEntryPage } from "./pages/order-entry";
@@ -42,6 +43,7 @@ export const router = createBrowserRouter([
       { path: "/dashboard/orders/new", element: <OrderEntryPage /> },
       { path: "/dashboard/settings/export", element: <DataExportPage /> },
       { path: "/admin/verifications", element: <AdminVerificationsPage /> },
+      { path: "/report-problem", element: <ReportProblemPage /> },
       {
         path: "/register/verification",
         element: <ComingSoonPage section="verification" />,
