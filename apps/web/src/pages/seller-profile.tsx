@@ -318,7 +318,7 @@ export function SellerProfilePage() {
       </section>
 
       <footer className="profile-actions">
-        <Link className="primary-link" to={`/orders/new?seller=${seller.id}`}>
+        <Link className="primary-link" to={`/order/new?seller=${seller.id}`}>
           <ShoppingBag size={18} /> ສ້າງ Safe Order
         </Link>
         <div>

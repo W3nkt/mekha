@@ -18,6 +18,7 @@ import { SellerDashboardPage } from "./pages/dashboard";
 import { ProductFormPage, ProductListPage } from "./pages/products";
 import { OrderEntryPage } from "./pages/order-entry";
 import { DataExportPage } from "./pages/data-export";
+import { SafeOrderCreatePage, SafeOrderPage } from "./pages/safe-order";
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +28,8 @@ export const router = createBrowserRouter([
       { path: "/search", element: <SellerSearchPage /> },
       { path: "/seller/:id", element: <SellerProfilePage /> },
       { path: "/s/:id", element: <SellerProfilePage /> },
+      { path: "/order/new", element: <SafeOrderCreatePage /> },
+      { path: "/order/:safeUrl", element: <SafeOrderPage /> },
       { path: "/login", element: <LoginPage /> },
       { path: "/register", element: <RegisterPhonePage /> },
       { path: "/register/verify", element: <RegisterVerifyPage /> },

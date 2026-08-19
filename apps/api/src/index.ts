@@ -11,6 +11,7 @@ import { facebookRoute } from "./routes/facebook";
 import { healthRoute } from "./routes/health";
 import { ordersRoute } from "./routes/orders";
 import { productsRoute } from "./routes/products";
+import { safeOrdersRoute } from "./routes/safe-orders";
 import { sellersRoute } from "./routes/sellers";
 import { trustRoute } from "./routes/trust";
 import type { ApiEnv } from "./types";
@@ -30,7 +31,17 @@ app.route("/v1/health", healthRoute);
 app.use("/v1/sellers/*", publicRateLimit);
 app.use("/v1/trust/*", publicRateLimit);
 app.route("/v1/sellers", sellersRoute);
+app.post("/v1/orders", async (context, next) => {
+  const payload = await context.req.raw.clone().json().catch(() => null) as { seller_id?: unknown } | null;
+  if (typeof payload?.seller_id !== "string") return next();
+  const target = new URL(context.req.url);
+  target.pathname = "/";
+  return safeOrdersRoute.fetch(new Request(target, context.req.raw), context.env, context.executionCtx);
+});
 app.route("/v1/orders", ordersRoute);
+// Safe Order public reads and seller actions share the documented order URL.
+app.route("/v1/orders", safeOrdersRoute);
+app.route("/v1/safe-orders", safeOrdersRoute);
 app.route("/v1/products", productsRoute);
 app.route("/v1/customers", customersRoute);
 app.route("/v1/facebook", facebookRoute);
