@@ -9,3 +9,11 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
+
+declare module "virtual:pwa-register/react" {
+  export function useRegisterSW(): {
+    needRefresh: [boolean, (value: boolean) => void];
+    offlineReady: [boolean, (value: boolean) => void];
+    updateServiceWorker: (reloadPage?: boolean) => Promise<void>;
+  };
+}
