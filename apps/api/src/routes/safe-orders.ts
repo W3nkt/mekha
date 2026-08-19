@@ -6,6 +6,7 @@ import { createSupabaseClient } from "../lib/supabase";
 import { requireAuth } from "../middleware/auth";
 import { publicRateLimit } from "../middleware/rateLimit";
 import type { ApiEnv } from "../types";
+import { sendWhatsAppMessage, WHATSAPP_TEMPLATES } from "../services/whatsapp";
 
 export const safeOrdersRoute = new Hono<ApiEnv>();
 safeOrdersRoute.use("*", publicRateLimit);
@@ -94,13 +95,15 @@ safeOrdersRoute.post("/:id/confirm", requireAuth, async (context) => {
   const supabase = createSupabaseClient(context.env);
   const { data: seller } = await supabase.from("seller_profiles").select("id").eq("owner_user_id", context.get("user").id).maybeSingle();
   if (!seller) return apiError(context, 403, "FORBIDDEN", "Seller profile required");
-  const current = await supabase.from("orders").select("id,seller_id,seller_confirmed_at,status").eq("id", context.req.param("id")).eq("seller_id", seller.id).maybeSingle();
+  const current = await supabase.from("orders").select("id,seller_id,buyer_id,seller_confirmed_at,status,amount,terms,friendly_id,seller_profiles(phone,business_name)").eq("id", context.req.param("id")).eq("seller_id", seller.id).maybeSingle();
   if (current.error) return apiError(context, 500, "INTERNAL_ERROR", "Safe Order lookup failed");
   if (!current.data) return apiError(context, 404, "NOT_FOUND", "Safe Order not found");
   if (current.data.seller_confirmed_at) return apiError(context, 409, "CONFLICT", "Safe Order terms are already locked");
   const now = new Date().toISOString();
   const { data, error } = await supabase.from("orders").update({ seller_confirmed_at: now, status: "confirmed" }).eq("id", current.data.id).select("id,status,buyer_confirmed_at,seller_confirmed_at").single();
   if (error) return apiError(context, 500, "INTERNAL_ERROR", "Safe Order confirmation failed");
+  const buyer = current.data.buyer_id ? await supabase.from("users").select("phone,whatsapp_opted_out").eq("id", current.data.buyer_id).maybeSingle() : null;
+  context.executionCtx.waitUntil(sendWhatsAppMessage(buyer?.data?.whatsapp_opted_out ? null : buyer?.data?.phone, WHATSAPP_TEMPLATES.order_confirmed, [{ type: "body", parameters: [{ type: "text", text: current.data.friendly_id ?? current.data.id }, { type: "text", text: current.data.seller_profiles?.business_name ?? "ร้านค้า" }, { type: "text", text: String(current.data.amount) }, { type: "text", text: String((current.data.terms as { delivery_date?: string } | null)?.delivery_date ?? "—") }, { type: "text", text: current.data.id }] }], context.env));
   return context.json({ data });
 });
 
