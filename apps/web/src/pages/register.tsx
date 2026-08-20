@@ -79,7 +79,7 @@ export function RegisterPhonePage() {
 export function RegisterVerifyPage() {
   const navigate = useNavigate();
   const phone = sessionStorage.getItem(PHONE_KEY);
-  const [digits, setDigits] = useState(["", "", "", "", ""]);
+  const [digits, setDigits] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [seconds, setSeconds] = useState(60);
   const refs = useRef<Array<HTMLInputElement | null>>([]);
