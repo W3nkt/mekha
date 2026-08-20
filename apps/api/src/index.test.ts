@@ -277,6 +277,80 @@ describe("Mekha API", () => {
     });
   });
 
+  it("accepts seller registration when the verified phone matches, despite Supabase Auth omitting the leading +", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url =
+          typeof input === "string"
+            ? input
+            : input instanceof URL
+              ? input.href
+              : input.url;
+        const method = init?.method ?? "GET";
+        if (url.includes("/auth/v1/user")) {
+          return new Response(
+            JSON.stringify({
+              id: "60ef2a7f-ed8b-4ee2-a9c6-c005afadc80d",
+              aud: "authenticated",
+              role: "authenticated",
+              phone: "8562029862982",
+              app_metadata: {},
+              user_metadata: {},
+              created_at: "2026-08-17T00:00:00.000Z",
+            }),
+            { status: 200, headers: { "content-type": "application/json" } },
+          );
+        }
+        if (url.includes("/rest/v1/seller_profiles") && method === "GET") {
+          return new Response("null", {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          });
+        }
+        if (url.includes("/rest/v1/lao_districts")) {
+          return new Response(
+            JSON.stringify({ id: "VTE-0101", province_id: "VTE" }),
+            { status: 200, headers: { "content-type": "application/json" } },
+          );
+        }
+        if (url.includes("/rest/v1/seller_profiles") && method === "POST") {
+          return new Response(
+            JSON.stringify({ id: "seller-1", business_name_lao: "ຮ້ານທົດສອບ" }),
+            { status: 201, headers: { "content-type": "application/json" } },
+          );
+        }
+        return new Response("[]", {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }),
+    );
+
+    const response = await app.request(
+      "/v1/sellers",
+      {
+        method: "POST",
+        headers: {
+          authorization: "Bearer valid-token",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          business_name_lao: "ຮ້ານທົດສອບ",
+          province: "VTE",
+          district: "VTE-0101",
+          phone: "+8562029862982",
+        }),
+      },
+      createEnv(),
+    );
+
+    expect(response.status).not.toBe(403);
+    await expect(response.json()).resolves.not.toMatchObject({
+      code: "PHONE_MISMATCH",
+    });
+  });
+
   it("rate limits the sixty-first public request", async () => {
     const env = createEnv();
 

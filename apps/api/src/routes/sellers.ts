@@ -43,7 +43,12 @@ sellersRoute.post("/", requireAuth, async (context) => {
       fields: parsed.error.flatten().fieldErrors,
     });
   const user = context.get("user");
-  if (user.phone !== parsed.data.phone)
+  // Supabase Auth stores user.phone in E.164 without a leading "+"
+  // (e.g. "8562029862982"), but CreateSellerSchema's LaoPhoneSchema
+  // requires one on the wire (e.g. "+8562029862982") for consistency
+  // with how phone numbers are displayed/used elsewhere in the app.
+  // Comparing them directly rejected every real registration.
+  if (user.phone !== parsed.data.phone.replace(/^\+/, ""))
     return apiError(
       context,
       403,
