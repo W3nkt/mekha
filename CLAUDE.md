@@ -1,4 +1,4 @@
-# Mekha (KhaiDee/LaoTrust)
+# Mekha (ແມ່ຄ້າ) / LaoTrust
 
 Seller trust and lightweight commerce OS for Lao social-commerce sellers. Cloudflare Workers/Hono API in `apps/api`, React PWA in `apps/web`, Supabase/Postgres in `supabase/migrations`, shared Zod types in `packages/types`, Turborepo + pnpm monorepo.
 
@@ -17,4 +17,4 @@ Work is tracked as GitHub issues (`gh issue list`), one per sprint task, numbere
 
 ## Local environment note
 
-`pnpm` is not on PATH in this dev environment (neither Git Bash nor PowerShell) — don't assume local build/lint/test can run; rely on `gh run list` / `gh run view` for CI status instead.
+`pnpm` is not on PATH in this dev environment (neither Git Bash nor PowerShell) — don't assume `pnpm` commands can run. `node_modules` is already installed, though: each workspace's own `tsc --noEmit` and `apps/web`'s `vite build` run fine invoked directly via `../../node_modules/.bin/{tsc,vite}` from that workspace's directory (`lint` and `type-check` are both literally `tsc --noEmit` in every package here), which catches the same errors CI's `type-check`/`lint`/`build` steps would. `vitest` has no local binary, so `test` still needs CI.
