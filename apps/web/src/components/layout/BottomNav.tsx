@@ -5,6 +5,7 @@ import {
   CircleUserRound,
   PackageCheck,
   PackageSearch,
+  Plus,
   ShieldCheck,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -121,6 +122,15 @@ export function BottomNav() {
         >
           <CircleUserRound size={22} strokeWidth={1.8} />
           <span>{t("nav.profile")}</span>
+        </NavLink>
+      )}
+      {loggedIn && pathname === "/dashboard/orders" && (
+        <NavLink
+          to="/dashboard/orders/new"
+          className="order-fab"
+          aria-label="ສ້າງຄຳສັ່ງໃໝ່"
+        >
+          <Plus size={25} aria-hidden="true" />
         </NavLink>
       )}
     </nav>

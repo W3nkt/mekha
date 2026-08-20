@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Plus, Printer, Search } from "lucide-react";
+import { Printer, Search } from "lucide-react";
 import { OrderStatusBadge, AddressDisplay, Button } from "@mekha/ui";
 import type { OrderStatus } from "@mekha/types";
 
@@ -215,9 +215,6 @@ export function OrderListPage() {
         ))}
       </div>
 
-      <Link to="/dashboard/orders/new" className="order-fab" aria-label="ສ້າງຄຳສັ່ງໃໝ່">
-        <Plus size={26} />
-      </Link>
     </div>
   );
 }
