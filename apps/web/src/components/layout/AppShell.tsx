@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Outlet } from "react-router-dom";
 
 import { BottomNav } from "./BottomNav";
@@ -12,7 +13,16 @@ export function AppShell() {
       <TopBar />
       <OfflineBanner />
       <main className="app-main">
-        <Outlet />
+        <Suspense
+          fallback={
+            <div className="route-loading" role="status" aria-live="polite">
+              <span className="route-loading__mark" aria-hidden="true" />
+              <span>ກຳລັງເປີດໜ້າ…</span>
+            </div>
+          }
+        >
+          <Outlet />
+        </Suspense>
       </main>
       <BottomNav />
       <UpdateBanner />

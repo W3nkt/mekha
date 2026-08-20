@@ -56,7 +56,7 @@ export function TopBar() {
           type="button"
           aria-haspopup="listbox"
           aria-expanded={open}
-          aria-label={t("common.language")}
+          aria-label={`${t("common.language")}: ${languageNames[current]} (${current.toUpperCase()})`}
         >
           <Languages size={18} />
           <span>{current.toUpperCase()}</span>
