@@ -8,11 +8,11 @@ import {
   Pencil,
   ShieldCheck,
   ShoppingBag,
-  Store,
 } from "lucide-react";
 import type { SellerDashboardChecklist, SellerDashboardProfile } from "@mekha/types";
 
 import { ApiError, apiRequest } from "../lib/api";
+import { SellerAvatar } from "../components/SellerAvatar";
 import { supabase } from "../lib/supabase";
 import { getVerification } from "./seller-profile";
 
@@ -225,7 +225,7 @@ export function SellerDashboardPage() {
     <article className="page-enter dashboard-page">
       <header className="profile-identity">
         <div className="profile-avatar">
-          {seller.logo_url ? <img src={seller.logo_url} alt="" /> : <Store />}
+          <SellerAvatar logoUrl={seller.logo_url} />
         </div>
         <div className="profile-name">
           <p className="eyebrow">LaoTrust seller dashboard</p>

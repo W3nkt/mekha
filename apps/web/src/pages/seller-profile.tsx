@@ -13,11 +13,11 @@ import {
   Share2,
   ShoppingBag,
   Star,
-  Store,
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
 import { ApiError, apiRequest } from "../lib/api";
+import { SellerAvatar } from "../components/SellerAvatar";
 
 const cautionCopy = {
   low: "ຕ່ຳ",
@@ -189,7 +189,7 @@ export function SellerProfilePage() {
     <article className="page-enter seller-profile-page">
       <header className="profile-identity">
         <div className="profile-avatar">
-          {seller.logo_url ? <img src={seller.logo_url} alt="" /> : <Store />}
+          <SellerAvatar logoUrl={seller.logo_url} />
         </div>
         <div className="profile-name">
           <p className="eyebrow">LaoTrust seller profile</p>

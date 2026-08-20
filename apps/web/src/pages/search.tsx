@@ -10,6 +10,7 @@ import type {
 import { Link, useSearchParams } from "react-router-dom";
 
 import { apiRequest } from "../lib/api";
+import { SellerAvatar } from "../components/SellerAvatar";
 
 export const detectSellerSearchType = (query: string): SellerSearch["type"] => {
   const value = query.trim();
@@ -30,11 +31,7 @@ function SellerCard({ seller }: { seller: SellerSearchResult }) {
   return (
     <Link className="seller-card" to={`/seller/${seller.id}`}>
       <div className="seller-logo" aria-hidden="true">
-        {seller.logo_url ? (
-          <img src={seller.logo_url} alt="" />
-        ) : (
-          <Store size={24} />
-        )}
+        <SellerAvatar logoUrl={seller.logo_url} iconSize={24} />
       </div>
       <div className="seller-card__body">
         <div className="seller-card__heading">
