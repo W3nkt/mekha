@@ -11,7 +11,7 @@ describe("language preferences", () => {
 
   it("uses Lao as the source and fallback language", () => {
     expect(i18n.options.fallbackLng).toContain("lo");
-    expect(i18n.t("app.name", { lng: "lo" })).toBe("ຂາຍດີ");
+    expect(i18n.t("app.name", { lng: "lo" })).toBe("ແມ່ຄ້າ");
   });
 
   it("persists a selected language", async () => {

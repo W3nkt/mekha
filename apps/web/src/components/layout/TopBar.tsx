@@ -1,6 +1,7 @@
-import { Languages, ShieldCheck } from "lucide-react";
+import { Languages } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import logo from "../../assets/logo-mark.png";
 
 const languages = ["lo", "th", "en"] as const;
 
@@ -19,9 +20,7 @@ export function TopBar() {
   return (
     <header className="top-bar">
       <Link className="brand-lockup" to="/" aria-label={t("app.name")}>
-        <span className="brand-mark" aria-hidden="true">
-          <ShieldCheck size={19} />
-        </span>
+        <img className="brand-mark" src={logo} alt="" aria-hidden="true" />
         <span>{t("app.name")}</span>
       </Link>
       <button

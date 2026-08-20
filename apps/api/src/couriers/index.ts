@@ -3,7 +3,7 @@ import type { ApiBindings } from "../types";
 import { MockCourierAdapter } from "./mock.adapter";
 
 /**
- * Always Mock today: KhaiDee ships with the adapter interface real Anousith
+ * Always Mock today: Mekha ships with the adapter interface real Anousith
  * integration will implement, but no Anousith API credentials or confirmed
  * settlement file format exist yet. Swap this once they do.
  */
