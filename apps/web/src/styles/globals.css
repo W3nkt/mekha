@@ -1197,35 +1197,63 @@ p {
 }
 
 .profile-share-row {
+  position: relative;
   display: flex;
-  gap: .75rem;
   align-items: center;
-  flex-wrap: wrap;
 }
 
 .profile-share-row code {
-  flex: 1 1 18rem;
+  width: 100%;
   overflow-wrap: anywhere;
-  padding: .8rem 1rem;
+  padding: .8rem 3.25rem .8rem 1rem;
   border: 1px solid var(--line);
   border-radius: .75rem;
   color: var(--ink-soft);
 }
 
-.profile-share-row button,
-.profile-share-links a,
-.profile-qr button {
+.profile-share-row button {
+  position: absolute;
+  right: .4rem;
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
   border: 0;
-  border-radius: 999px;
-  padding: .7rem 1rem;
-  background: var(--brand-900);
-  color: white;
+  border-radius: .55rem;
+  color: var(--brand-900);
+  background: transparent;
+  cursor: pointer;
+}
+.profile-share-row button:hover { background: var(--neutral-100); }
+.profile-share-row button:focus-visible,
+.profile-share-action:focus-visible { outline: 3px solid rgba(61, 138, 99, .35); outline-offset: 2px; }
+
+.profile-share-actions {
+  display: flex;
+  gap: .65rem;
+  flex-wrap: wrap;
+}
+.profile-share-action {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: .55rem;
+  padding: .55rem .8rem;
+  border: 1px solid var(--neutral-300);
+  border-radius: .7rem;
+  color: var(--brand-900);
+  background: var(--white);
   text-decoration: none;
   cursor: pointer;
   font: inherit;
+  font-weight: 700;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
 }
+.profile-share-action:hover { border-color: var(--brand-500); background: #f1f7f4; transform: translateY(-1px); }
+.profile-share-action svg { flex: 0 0 auto; width: 20px; height: 20px; }
+.profile-share-action--facebook svg { color: #1877f2; }
+.profile-share-action--whatsapp svg { color: #25d366; }
 
-.profile-share-links { display: flex; gap: .65rem; flex-wrap: wrap; }
 .profile-qr { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
 .profile-qr img { width: 160px; height: 160px; border-radius: .75rem; background: white; padding: .5rem; }
 .profile-actions > div {

@@ -1,16 +1,21 @@
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { useQuery } from "@tanstack/react-query";
+import { SiFacebook, SiWhatsapp } from "@icons-pack/react-simple-icons";
 import type { SellerTrustProfile, TrustSignal } from "@mekha/types";
 import {
   AlertTriangle,
   Check,
   CheckCircle2,
   Clock3,
+  Copy,
+  Download,
   ExternalLink,
   Globe2,
   MapPin,
+  QrCode,
   Share2,
+  ShieldCheck,
   ShoppingBag,
   Star,
 } from "lucide-react";
@@ -255,19 +260,25 @@ export function SellerProfilePage() {
         <h2 id="profile-sharing-title">ແບ່ງປັນໂປຣໄຟລ໌</h2>
         <div className="profile-share-row">
           <code>{profileUrl}</code>
-          <button type="button" onClick={() => void navigator.clipboard.writeText(profileUrl).then(() => setShared(true))}>
-            {shared ? "ສຳເນົາ URL ແລ້ວ!" : "ສຳເນົາ"}
+          <button type="button" aria-label="ສຳເນົາລິ້ງໂປຣໄຟລ໌" title={shared ? "ສຳເນົາແລ້ວ" : "ສຳເນົາລິ້ງ"} onClick={() => void navigator.clipboard.writeText(profileUrl).then(() => setShared(true))}>
+            {shared ? <Check size={19} /> : <Copy size={19} />}
           </button>
         </div>
-        <div className="profile-share-links">
-          <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(profileUrl)}`} target="_blank" rel="noreferrer">Facebook</a>
-          <a href={whatsappUrl} target="_blank" rel="noreferrer">WhatsApp</a>
-          <a href={`https://mekha-api.wen-kt2020.workers.dev/v1/sellers/${seller.id}/og-image`} download={`mekha-seller-${seller.id}-badge.png`}>Trust badge</a>
+        <div className="profile-share-actions">
+          <a className="profile-share-action profile-share-action--facebook" href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(profileUrl)}`} target="_blank" rel="noreferrer"><SiFacebook aria-hidden="true" /><span>Facebook</span></a>
+          <a className="profile-share-action profile-share-action--whatsapp" href={whatsappUrl} target="_blank" rel="noreferrer"><SiWhatsapp aria-hidden="true" /><span>WhatsApp</span></a>
+          <a className="profile-share-action" href={`https://mekha-api.wen-kt2020.workers.dev/v1/sellers/${seller.id}/og-image`} download={`mekha-seller-${seller.id}-badge.png`}><ShieldCheck size={20} /><span>Trust badge</span></a>
+          {!qrCode && <button className="profile-share-action" type="button" onClick={() => void createQr()}><QrCode size={20} /><span>ສ້າງ QR Code</span></button>}
         </div>
-        <div className="profile-qr">
-          {!qrCode ? <button type="button" onClick={() => void createQr()}>ສ້າງ QR Code</button> : <img src={qrCode} alt="QR code for this seller profile" />}
-          {qrCode && <button type="button" onClick={downloadQr}>ດາວໂຫລດ QR Code</button>}
-        </div>
+        {qrCode && (
+          <div className="profile-qr">
+            <img src={qrCode} alt="QR code for this seller profile" />
+            <button className="profile-share-action" type="button" onClick={downloadQr}>
+              <Download size={20} />
+              <span>ດາວໂຫລດ QR Code</span>
+            </button>
+          </div>
+        )}
       </section>
 
       <section className="profile-section reviews-section">
