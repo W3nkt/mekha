@@ -61,7 +61,7 @@ export function buildChecklistSteps(
       key: "first_order_created",
       label: "ສ້າງ Safe Order ທຳອິດ",
       done: checklist.first_order_created,
-      cta: { label: "ລອງດຽວນີ້", to: "/orders" },
+      cta: { label: "ລອງດຽວນີ້", to: "/dashboard/orders/new" },
     },
   ];
 }
@@ -462,7 +462,7 @@ export function SellerDashboardPage() {
       </section>
 
       <footer className="profile-actions">
-        <Link className="primary-link" to="/orders">
+        <Link className="primary-link" to="/dashboard/orders/new">
           <ShoppingBag size={18} /> ສ້າງ Safe Order
         </Link>
       </footer>
