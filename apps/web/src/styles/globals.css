@@ -93,10 +93,14 @@ a {
   letter-spacing: -0.02em;
 }
 .brand-mark {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: #173f5f;
+  box-shadow: 0 7px 20px rgba(23, 63, 95, 0.18);
 }
 .language-button {
   min-height: 44px;

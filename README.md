@@ -5,7 +5,7 @@
 [![Deploy API](https://github.com/W3nkt/mekha/actions/workflows/deploy-api.yml/badge.svg)](https://github.com/W3nkt/mekha/actions/workflows/deploy-api.yml)
 [![Database Migrations](https://github.com/W3nkt/mekha/actions/workflows/db-migrate.yml/badge.svg)](https://github.com/W3nkt/mekha/actions/workflows/db-migrate.yml)
 
-Mekha (ແມ່ຄ້າ) is the seller OS and trust layer (LaoTrust) platform for Lao social commerce.
+Mekha is the internal monorepo for KhaiDee (seller OS) and LaoTrust (trust layer).
 
 ## Requirements
 
@@ -45,7 +45,7 @@ Do not run destructive database commands against the hosted production project. 
 
 ## Structure
 
-- `apps/web` — Mekha React PWA
+- `apps/web` — KhaiDee React PWA
 - `apps/api` — Cloudflare Workers API
 - `apps/admin` — administration dashboard
 - `packages/types` — shared TypeScript contracts
