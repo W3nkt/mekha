@@ -25,6 +25,7 @@ import { FinancePage } from "./pages/finance";
 import { SettingsPage } from "./pages/settings";
 import { DataExportPage } from "./pages/data-export";
 import { SafeOrderCreatePage, SafeOrderPage } from "./pages/safe-order";
+import { TrackOrderPage } from "./pages/track-order";
 
 export const router = createBrowserRouter([
   {
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
       { path: "/s/:id", element: <SellerProfilePage /> },
       { path: "/order/new", element: <SafeOrderCreatePage /> },
       { path: "/order/:safeUrl", element: <SafeOrderPage /> },
+      { path: "/track", element: <TrackOrderPage /> },
       { path: "/login", element: <LoginPage /> },
       { path: "/register", element: <RegisterPhonePage /> },
       { path: "/register/verify", element: <RegisterVerifyPage /> },

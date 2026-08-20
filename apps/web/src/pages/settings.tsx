@@ -1,14 +1,18 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { Download, LogOut, ShieldCheck, Users } from "lucide-react";
 
 import { ApiError, apiRequest } from "../lib/api";
 import { supabase } from "../lib/supabase";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 
 const planLabel = { free: "Free", standard: "Standard", pro: "Pro" } as const;
 
 export function SettingsPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
 
   const profile = useQuery({
     queryKey: ["settings-profile"],
@@ -26,6 +30,10 @@ export function SettingsPage() {
 
   async function signOut() {
     if (supabase) await supabase.auth.signOut();
+    // Sellers' cached queries (dashboard profile, bottom nav avatar, etc.) must
+    // be purged here, or they keep rendering the logged-in state after sign-out.
+    queryClient.clear();
+    setConfirmLogoutOpen(false);
     navigate("/");
   }
 
@@ -58,9 +66,24 @@ export function SettingsPage() {
         </Link>
       </section>
 
-      <button type="button" className="mk-button mk-button--danger" onClick={() => void signOut()}>
-        <LogOut size={16} /> ອອກຈາກລະບົບ
+      <button
+        type="button"
+        className="mk-button mk-button--danger settings-logout"
+        onClick={() => setConfirmLogoutOpen(true)}
+      >
+        <LogOut size={18} /> ອອກຈາກລະບົບ
       </button>
+
+      <ConfirmDialog
+        open={confirmLogoutOpen}
+        title="ອອກຈາກລະບົບ?"
+        description="ທ່ານຈະຕ້ອງເຂົ້າສູ່ລະບົບໃໝ່ອີກຄັ້ງເພື່ອຈັດການຮ້ານຄ້າຂອງທ່ານ."
+        confirmLabel="ອອກຈາກລະບົບ"
+        cancelLabel="ຍົກເລີກ"
+        tone="danger"
+        onConfirm={() => void signOut()}
+        onCancel={() => setConfirmLogoutOpen(false)}
+      />
     </div>
   );
 }

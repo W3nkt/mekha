@@ -281,6 +281,10 @@ p {
   box-shadow: 0 16px 50px rgba(24, 44, 57, 0.16);
   backdrop-filter: blur(18px);
 }
+.bottom-nav--guest {
+  grid-template-columns: repeat(3, 1fr);
+  width: min(calc(100% - 20px), 360px);
+}
 .nav-item {
   min-width: 0;
   min-height: 54px;
@@ -745,6 +749,15 @@ p {
   font: inherit;
   color: var(--neutral-900);
   background: transparent;
+}
+.track-order-form {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 12px;
+}
+.track-order-form .mk-button {
+  width: 100%;
 }
 .seller-results {
   display: grid;
@@ -2629,6 +2642,70 @@ p {
   color: var(--neutral-900);
   font-weight: 700;
   text-decoration: none;
+}
+.settings-logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  margin: 28px 0 12px;
+  padding: 14px 18px;
+  font-size: 15px;
+}
+.confirm-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(2px);
+  animation: dialog-fade-in 0.15s ease both;
+}
+.confirm-dialog {
+  width: min(100%, 360px);
+  padding: 24px;
+  background: var(--white);
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  animation: dialog-in 0.2s cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+.confirm-dialog h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+.confirm-dialog p {
+  margin: 0 0 22px;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+.confirm-dialog__actions {
+  display: flex;
+  gap: 10px;
+}
+.confirm-dialog__actions .mk-button {
+  flex: 1;
+}
+@keyframes dialog-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 .settlement-report__totals {
   display: flex;

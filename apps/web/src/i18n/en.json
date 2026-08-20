@@ -22,7 +22,10 @@
     "products": "Products",
     "finance": "Finance",
     "trust": "Trust",
-    "settings": "Settings"
+    "settings": "Settings",
+    "verify": "Verify shop",
+    "track": "Track order",
+    "profile": "Profile"
   },
   "auth": {
     "title": "Sign in to your shop",
