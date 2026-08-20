@@ -50,7 +50,9 @@ export const router = createBrowserRouter([
         path: "/register/verification",
         element: <ComingSoonPage section="verification" />,
       },
-      { path: "/dev/components", element: <ComponentsPage /> },
+      ...(import.meta.env.DEV
+        ? [{ path: "/dev/components", element: <ComponentsPage /> }]
+        : []),
       { path: "/orders", element: <ComingSoonPage section="orders" /> },
       { path: "/products", element: <ComingSoonPage section="products" /> },
       { path: "/finance", element: <ComingSoonPage section="finance" /> },
