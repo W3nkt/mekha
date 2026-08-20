@@ -8,7 +8,7 @@ const LOGIN_PHONE_KEY = "mekha.login.phone";
 export function LoginPage() {
   const { t } = useTranslation();
   const [phone, setPhone] = useState("");
-  const [otp, setOtp] = useState("");
+  const [digits, setDigits] = useState(["", "", "", "", "", ""]);
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -31,10 +31,11 @@ export function LoginPage() {
     event?.preventDefault();
     setError("");
     const normalized = sessionStorage.getItem(LOGIN_PHONE_KEY) ?? normalizeLaoPhone(phone);
-    if (!normalized || !/^\d{6}$/.test(otp)) return setError("Enter the 6-digit code");
+    const token = digits.join("");
+    if (!normalized || !/^\d{6}$/.test(token)) return setError("Enter the 6-digit code");
     if (!supabase) return setError("Phone authentication is not configured");
     setBusy(true);
-    const result = await supabase.auth.verifyOtp({ phone: normalized, token: otp, type: "sms" });
+    const result = await supabase.auth.verifyOtp({ phone: normalized, token, type: "sms" });
     setBusy(false);
     if (result.error) return setError(result.error.message);
     sessionStorage.removeItem(LOGIN_PHONE_KEY);
@@ -55,10 +56,10 @@ export function LoginPage() {
         <button type="submit" disabled={busy} data-testid="send-otp">{busy ? "Sending…" : t("auth.continue")} <ArrowRight size={18} /></button>
       </form> : <form className="phone-form" onSubmit={verifyOtp}>
         <p>Code sent to {phone}</p>
-        <div className="otp-row">{Array.from({ length: 6 }, (_, index) => <input key={index} ref={(element) => { refs.current[index] = element; }} data-testid="otp-input" aria-label={`OTP digit ${index + 1}`} inputMode="numeric" autoComplete={index === 0 ? "one-time-code" : "off"} maxLength={1} value={otp[index] ?? ""} onChange={(event) => { const value = event.target.value.replace(/\D/g, "").slice(-1); const next = otp.split(""); next[index] = value; setOtp(next.join("")); if (value) refs.current[index + 1]?.focus(); }} onKeyDown={(event) => { if (event.key === "Backspace" && !otp[index]) refs.current[index - 1]?.focus(); }} />)}</div>
+        <div className="otp-row">{digits.map((digit, index) => <input key={index} ref={(element) => { refs.current[index] = element; }} data-testid="otp-input" aria-label={`OTP digit ${index + 1}`} inputMode="numeric" autoComplete={index === 0 ? "one-time-code" : "off"} maxLength={1} value={digit} onChange={(event) => { const value = event.target.value.replace(/\D/g, "").slice(-1); const next = [...digits]; next[index] = value; setDigits(next); if (value) refs.current[index + 1]?.focus(); }} onKeyDown={(event) => { if (event.key === "Backspace" && !digit) refs.current[index - 1]?.focus(); }} />)}</div>
         {error && <p className="form-error" role="alert">{error}</p>}
         <button type="submit" disabled={busy} data-testid="verify-otp">{busy ? "Verifying…" : "Verify code"}</button>
-        <button type="button" className="text-button" onClick={() => { setStep("phone"); setOtp(""); setError(""); }}>Change phone number</button>
+        <button type="button" className="text-button" onClick={() => { setStep("phone"); setDigits(["", "", "", "", "", ""]); setError(""); }}>Change phone number</button>
       </form>}
     </section>
   );
