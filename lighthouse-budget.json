@@ -1,0 +1,1 @@
+[{"path":"/*","timings":[{"metric":"interactive","budget":3000},{"metric":"first-contentful-paint","budget":1500}],"resourceSizes":[{"resourceType":"script","budget":200},{"resourceType":"total","budget":400}],"scores":[{"category":"performance","minScore":0.9},{"category":"accessibility","minScore":0.95},{"category":"pwa","minScore":1}]}]

@@ -36,6 +36,28 @@ export type PendingOrder = {
   createdAt: string;
   attempts: number;
   lastError?: string;
+  requiresReview?: boolean;
+};
+
+export type OrderEvent = {
+  id: string;
+  orderId: string;
+  type: "created" | "confirmed" | "status_changed" | "note_added";
+  payload: Record<string, unknown>;
+  createdAt: string;
+  synced: boolean;
+};
+
+export type SyncQueueItem = {
+  id: string;
+  entityType: "order" | "order_event";
+  entityId: string;
+  payload: Record<string, unknown>;
+  attempts: number;
+  syncedAt: string | null;
+  lastError?: string;
+  requiresReview?: boolean;
+  createdAt: string;
 };
 
 class MekhaOfflineDb extends Dexie {
@@ -44,6 +66,8 @@ class MekhaOfflineDb extends Dexie {
   provinces!: EntityTable<CachedPlace, "id">;
   districts!: EntityTable<CachedPlace, "id">;
   pendingOrders!: EntityTable<PendingOrder, "localId">;
+  orderEvents!: EntityTable<OrderEvent, "id">;
+  syncQueue!: EntityTable<SyncQueueItem, "id">;
 
   constructor() {
     super("mekha-offline");
@@ -53,6 +77,15 @@ class MekhaOfflineDb extends Dexie {
       provinces: "id",
       districts: "id, province_id",
       pendingOrders: "localId, createdAt",
+    });
+    this.version(2).stores({
+      products: "id",
+      customers: "id, phone",
+      provinces: "id",
+      districts: "id, province_id",
+      pendingOrders: "localId, createdAt, requiresReview",
+      orderEvents: "id, orderId, synced, createdAt",
+      syncQueue: "id, entityType, syncedAt, attempts, requiresReview, createdAt",
     });
   }
 }

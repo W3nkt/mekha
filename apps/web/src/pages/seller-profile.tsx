@@ -271,6 +271,9 @@ export function SellerProfilePage() {
       </section>
 
       <section className="profile-section reviews-section">
+        {seller.average_rating !== null && (
+          <p className="review-summary">★ {seller.average_rating.toFixed(1)} / 5 · {verifiedReviews.length} verified reviews</p>
+        )}
         <p className="eyebrow">Buyer evidence</p>
         <h2>ຣີວິວຈາກຜູ້ຊື້</h2>
         {verifiedReviews.length === 0 && otherReviews.length === 0 && (
@@ -318,7 +321,7 @@ export function SellerProfilePage() {
       </section>
 
       <footer className="profile-actions">
-        <Link className="primary-link" to={`/orders/new?seller=${seller.id}`}>
+        <Link className="primary-link" to={`/order/new?seller=${seller.id}`}>
           <ShoppingBag size={18} /> ສ້າງ Safe Order
         </Link>
         <div>
