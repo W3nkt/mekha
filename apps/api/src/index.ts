@@ -10,8 +10,10 @@ import { customersRoute } from "./routes/customers";
 import { facebookRoute } from "./routes/facebook";
 import { healthRoute } from "./routes/health";
 import { disputesRoute, evidenceRoute } from "./routes/evidence";
+import { labelsRoute } from "./routes/labels";
 import { ordersRoute } from "./routes/orders";
 import { productsRoute } from "./routes/products";
+import { settlementsRoute } from "./routes/settlements";
 import { safeOrdersRoute } from "./routes/safe-orders";
 import { reviewsRoute } from "./routes/reviews";
 import { reportsRoute } from "./routes/reports";
@@ -45,6 +47,8 @@ app.post("/v1/orders", async (context, next) => {
   return safeOrdersRoute.fetch(new Request(target, context.req.raw), context.env, context.executionCtx);
 });
 app.route("/v1/orders", evidenceRoute);
+app.route("/v1/orders", labelsRoute);
+app.route("/v1/orders", settlementsRoute);
 app.route("/v1/orders", ordersRoute);
 // Safe Order public reads and seller actions share the documented order URL.
 app.route("/v1/orders", safeOrdersRoute);

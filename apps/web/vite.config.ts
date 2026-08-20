@@ -46,6 +46,14 @@ export default defineConfig({
       },
     }),
   ],
+  // @mekha/ui ships raw TSX (no build step) and pins its own devDependency
+  // react version, which pnpm's strict linking can resolve to a separate
+  // physical copy from apps/web's react. Any hook called from that package
+  // (e.g. Input's useId()) then runs against a dispatcher-less React
+  // instance and throws "Cannot read properties of null". Force a single
+  // instance rather than editing package.json, which would need a
+  // pnpm-lock.yaml regeneration this environment can't produce.
+  resolve: { dedupe: ["react", "react-dom"] },
   server: { port: 5173 },
   preview: { port: 4173 },
 });

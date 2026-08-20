@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import App from "./App";
 import { ComingSoonPage } from "./pages/coming-soon";
@@ -19,6 +19,10 @@ import { DashboardTrustPage } from "./pages/dashboard-trust";
 import { SellerDashboardPage } from "./pages/dashboard";
 import { ProductFormPage, ProductListPage } from "./pages/products";
 import { OrderEntryPage } from "./pages/order-entry";
+import { OrderDetailPage, OrderListPage } from "./pages/orders";
+import { CustomerDetailPage, CustomerListPage } from "./pages/customers";
+import { FinancePage } from "./pages/finance";
+import { SettingsPage } from "./pages/settings";
 import { DataExportPage } from "./pages/data-export";
 import { SafeOrderCreatePage, SafeOrderPage } from "./pages/safe-order";
 
@@ -41,7 +45,13 @@ export const router = createBrowserRouter([
       { path: "/dashboard/products", element: <ProductListPage /> },
       { path: "/dashboard/products/new", element: <ProductFormPage /> },
       { path: "/dashboard/products/:id", element: <ProductFormPage /> },
+      { path: "/dashboard/orders", element: <OrderListPage /> },
       { path: "/dashboard/orders/new", element: <OrderEntryPage /> },
+      { path: "/dashboard/orders/:id", element: <OrderDetailPage /> },
+      { path: "/dashboard/customers", element: <CustomerListPage /> },
+      { path: "/dashboard/customers/:id", element: <CustomerDetailPage /> },
+      { path: "/dashboard/finance", element: <FinancePage /> },
+      { path: "/dashboard/settings", element: <SettingsPage /> },
       { path: "/dashboard/settings/export", element: <DataExportPage /> },
       { path: "/admin/verifications", element: <AdminVerificationsPage /> },
       { path: "/report-problem", element: <ReportProblemPage /> },
@@ -53,11 +63,11 @@ export const router = createBrowserRouter([
       ...(import.meta.env.DEV
         ? [{ path: "/dev/components", element: <ComponentsPage /> }]
         : []),
-      { path: "/orders", element: <ComingSoonPage section="orders" /> },
-      { path: "/products", element: <ComingSoonPage section="products" /> },
-      { path: "/finance", element: <ComingSoonPage section="finance" /> },
-      { path: "/trust", element: <ComingSoonPage section="trust" /> },
-      { path: "/settings", element: <ComingSoonPage section="settings" /> },
+      { path: "/orders", element: <Navigate to="/dashboard/orders" replace /> },
+      { path: "/products", element: <Navigate to="/dashboard/products" replace /> },
+      { path: "/finance", element: <Navigate to="/dashboard/finance" replace /> },
+      { path: "/trust", element: <Navigate to="/dashboard/trust" replace /> },
+      { path: "/settings", element: <Navigate to="/dashboard/settings" replace /> },
       { path: "*", element: <NotFoundPage /> },
     ],
   },

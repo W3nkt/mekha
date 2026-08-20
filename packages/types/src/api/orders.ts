@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PaymentMethod } from "../enums";
+import { CourierName, OrderStatus, PaymentMethod } from "../enums";
 
 export const LaoAddressSchema = z.object({
   province_id: z.string().min(1),
@@ -45,3 +45,50 @@ export const CreateSafeOrderSchema = z.object({
   buyer_phone: z.string().regex(/^(\+856|0)[0-9]{8,10}$/),
 });
 export type CreateSafeOrder = z.infer<typeof CreateSafeOrderSchema>;
+
+export const OrderListQuerySchema = z.object({
+  status: z
+    .string()
+    .transform((value) => value.split(",").filter(Boolean))
+    .pipe(z.array(z.enum(OrderStatus)))
+    .optional(),
+  q: z.string().trim().max(100).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+export type OrderListQuery = z.infer<typeof OrderListQuerySchema>;
+
+const FORWARD_ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  draft: ["confirmed"],
+  confirmed: ["packed", "shipped"],
+  packed: ["shipped"],
+  shipped: ["delivered"],
+  delivered: ["settled"],
+  settled: [],
+  returned: [],
+  disputed: [],
+};
+export const isValidOrderTransition = (
+  from: OrderStatus,
+  to: OrderStatus,
+): boolean =>
+  FORWARD_ORDER_TRANSITIONS[from].includes(to) ||
+  ((to === "returned" || to === "disputed") && from !== to);
+
+export const UpdateOrderStatusSchema = z.object({
+  status: z.enum(OrderStatus),
+  tracking_number: z.string().trim().min(1).max(60).optional(),
+  courier: z.enum(CourierName).optional(),
+});
+export type UpdateOrderStatus = z.infer<typeof UpdateOrderStatusSchema>;
+
+export const CreateLabelsSchema = z.object({
+  order_ids: z.array(z.string().uuid()).min(1).max(30),
+});
+export type CreateLabels = z.infer<typeof CreateLabelsSchema>;
+
+export const ImportSettlementSchema = z.object({
+  courier: z.enum(CourierName),
+  file_content: z.string().min(1).max(2_000_000),
+});
+export type ImportSettlement = z.infer<typeof ImportSettlementSchema>;

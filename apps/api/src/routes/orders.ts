@@ -1,5 +1,13 @@
-import { Hono } from "hono";
-import { CreateOrderSchema } from "@mekha/types";
+import { Hono, type Context } from "hono";
+import {
+  CreateOrderSchema,
+  isValidOrderTransition,
+  normalizeLaoPhone,
+  OrderListQuerySchema,
+  UpdateOrderStatusSchema,
+  type OrderStatus,
+  type OrderUpdate,
+} from "@mekha/types";
 
 import { apiError } from "../lib/errors";
 import { createSupabaseClient } from "../lib/supabase";
@@ -10,7 +18,148 @@ import type { ApiEnv } from "../types";
 export const ordersRoute = new Hono<ApiEnv>();
 
 ordersRoute.use("*", requireAuth, authenticatedRateLimit);
-ordersRoute.get("/", (context) => context.json({ data: [] }));
+
+const ownedSellerId = async (context: Context<ApiEnv>) => {
+  const supabase = createSupabaseClient(context.env);
+  const { data, error } = await supabase
+    .from("seller_profiles")
+    .select("id")
+    .eq("owner_user_id", context.get("user").id)
+    .maybeSingle();
+  return { supabase, sellerId: data?.id ?? null, error };
+};
+
+const orderListFields =
+  "id,friendly_id,status,payment_method,amount,delivery_fee,created_at,tracking_number,courier,customers(name,phone),order_items(product_name,quantity)";
+
+ordersRoute.get("/", async (context) => {
+  const parsed = OrderListQuerySchema.safeParse(context.req.query());
+  if (!parsed.success)
+    return apiError(context, 400, "BAD_REQUEST", "ຄຳຮ້ອງຂໍບໍ່ຖືກຕ້ອງ");
+  const { supabase, sellerId, error } = await ownedSellerId(context);
+  if (error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ກວດສອບຮ້ານຄ້າບໍ່ສຳເລັດ");
+  if (!sellerId)
+    return apiError(context, 403, "FORBIDDEN", "ທ່ານຍັງບໍ່ໄດ້ລົງທະບຽນຮ້ານຄ້າ");
+
+  const { status, q, page, limit } = parsed.data;
+  let query = supabase
+    .from("orders")
+    .select(orderListFields, { count: "exact" })
+    .eq("seller_id", sellerId)
+    .order("created_at", { ascending: false })
+    .range((page - 1) * limit, page * limit - 1);
+  if (status?.length) query = query.in("status", status);
+  if (q) {
+    const literal = q.replace(/[\\%_]/g, "\\$&");
+    const matchingCustomers = await supabase
+      .from("customers")
+      .select("id")
+      .eq("seller_id", sellerId)
+      .or(`name.ilike.%${literal}%,phone.ilike.%${literal}%`);
+    const customerIds = (matchingCustomers.data ?? []).map((row) => row.id);
+    const orFilters = [`friendly_id.ilike.%${literal}%`];
+    if (customerIds.length) orFilters.push(`customer_id.in.(${customerIds.join(",")})`);
+    query = query.or(orFilters.join(","));
+  }
+  const { data, error: listError, count } = await query;
+  if (listError)
+    return apiError(context, 500, "INTERNAL_ERROR", "ໂຫລດຄຳສັ່ງບໍ່ສຳເລັດ");
+  return context.json({
+    data: (data ?? []).map((order) => ({
+      id: order.id,
+      friendly_id: order.friendly_id,
+      status: order.status,
+      payment_method: order.payment_method,
+      amount: order.amount,
+      delivery_fee: order.delivery_fee,
+      created_at: order.created_at,
+      tracking_number: order.tracking_number,
+      courier: order.courier,
+      customer: order.customers,
+      items: order.order_items,
+    })),
+    total: count ?? 0,
+    page,
+    limit,
+  });
+});
+
+ordersRoute.get("/:id", async (context) => {
+  const orderId = context.req.param("id");
+  const { supabase, sellerId, error } = await ownedSellerId(context);
+  if (error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ກວດສອບຮ້ານຄ້າບໍ່ສຳເລັດ");
+  if (!sellerId)
+    return apiError(context, 403, "FORBIDDEN", "ທ່ານຍັງບໍ່ໄດ້ລົງທະບຽນຮ້ານຄ້າ");
+  const { data: order, error: orderError } = await supabase
+    .from("orders")
+    .select(
+      "id,friendly_id,status,payment_method,amount,delivery_fee,created_at,updated_at,note,tracking_number,courier,delivery_address,customers(id,name,phone),order_items(id,product_name,quantity,unit_price,line_total),courier_labels(id,courier,tracking_number,status,created_at)",
+    )
+    .eq("id", orderId)
+    .eq("seller_id", sellerId)
+    .maybeSingle();
+  if (orderError)
+    return apiError(context, 500, "INTERNAL_ERROR", "ໂຫລດຄຳສັ່ງບໍ່ສຳເລັດ");
+  if (!order) return apiError(context, 404, "NOT_FOUND", "ບໍ່ພົບຄຳສັ່ງນີ້");
+  return context.json({ data: order });
+});
+
+ordersRoute.patch("/:id/status", async (context) => {
+  const orderId = context.req.param("id");
+  const parsed = UpdateOrderStatusSchema.safeParse(
+    await context.req.json().catch(() => null),
+  );
+  if (!parsed.success)
+    return apiError(context, 400, "BAD_REQUEST", "ຂໍ້ມູນບໍ່ຖືກຕ້ອງ");
+  const { supabase, sellerId, error } = await ownedSellerId(context);
+  if (error)
+    return apiError(context, 500, "INTERNAL_ERROR", "ກວດສອບຮ້ານຄ້າບໍ່ສຳເລັດ");
+  if (!sellerId)
+    return apiError(context, 403, "FORBIDDEN", "ທ່ານຍັງບໍ່ໄດ້ລົງທະບຽນຮ້ານຄ້າ");
+
+  const { data: existing, error: existingError } = await supabase
+    .from("orders")
+    .select("id,status")
+    .eq("id", orderId)
+    .eq("seller_id", sellerId)
+    .maybeSingle();
+  if (existingError)
+    return apiError(context, 500, "INTERNAL_ERROR", "ໂຫລດຄຳສັ່ງບໍ່ສຳເລັດ");
+  if (!existing) return apiError(context, 404, "NOT_FOUND", "ບໍ່ພົບຄຳສັ່ງນີ້");
+  const currentStatus = existing.status as OrderStatus;
+  if (!isValidOrderTransition(currentStatus, parsed.data.status))
+    return apiError(
+      context,
+      400,
+      "INVALID_TRANSITION",
+      `ບໍ່ສາມາດປ່ຽນສະຖານະຈາກ ${currentStatus} ເປັນ ${parsed.data.status} ໄດ້`,
+    );
+
+  const update: OrderUpdate = { status: parsed.data.status };
+  if (parsed.data.tracking_number) update.tracking_number = parsed.data.tracking_number;
+  if (parsed.data.courier) update.courier = parsed.data.courier;
+
+  const { data: updated, error: updateError } = await supabase
+    .from("orders")
+    .update(update)
+    .eq("id", orderId)
+    .select("id,status,tracking_number,courier")
+    .single();
+  if (updateError)
+    return apiError(context, 500, "INTERNAL_ERROR", "ອັບເດດສະຖານະບໍ່ສຳເລັດ");
+
+  await supabase.from("audit_logs").insert({
+    actor_id: context.get("user").id,
+    event: "order.status_changed",
+    entity_type: "order",
+    entity_id: orderId,
+    metadata: { from: existing.status, to: parsed.data.status },
+  });
+
+  return context.json({ data: updated });
+});
 
 ordersRoute.post("/", async (context) => {
   const parsed = CreateOrderSchema.safeParse(
@@ -20,6 +169,9 @@ ordersRoute.post("/", async (context) => {
     return apiError(context, 400, "BAD_REQUEST", "ຂໍ້ມູນຄຳສັ່ງບໍ່ຖືກຕ້ອງ", {
       fields: parsed.error.flatten().fieldErrors,
     });
+  const customerPhone = normalizeLaoPhone(parsed.data.customer_phone);
+  if (!customerPhone)
+    return apiError(context, 400, "BAD_REQUEST", "ເບີໂທລູກຄ້າບໍ່ຖືກຕ້ອງ");
 
   const supabase = createSupabaseClient(context.env);
   const user = context.get("user");
@@ -80,7 +232,7 @@ ordersRoute.post("/", async (context) => {
     .from("customers")
     .select("order_count")
     .eq("seller_id", seller.id)
-    .eq("phone", parsed.data.customer_phone)
+    .eq("phone", customerPhone)
     .maybeSingle();
   if (existingCustomer.error)
     return apiError(context, 500, "INTERNAL_ERROR", "ກວດສອບລູກຄ້າບໍ່ສຳເລັດ");
@@ -90,7 +242,7 @@ ordersRoute.post("/", async (context) => {
     .upsert(
       {
         seller_id: seller.id,
-        phone: parsed.data.customer_phone,
+        phone: customerPhone,
         name: parsed.data.customer_name,
         province: parsed.data.shipping_address.province_id,
         district: parsed.data.shipping_address.district_id,

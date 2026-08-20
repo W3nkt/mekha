@@ -2354,3 +2354,340 @@ p {
   font-size: 13px;
   text-align: center;
 }
+
+/* Orders, customers, finance (Sprint 2) */
+.orders-search {
+  margin-top: 0;
+  box-shadow: none;
+  border: 1px solid var(--neutral-300);
+}
+.order-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 16px 0;
+  overflow-x: auto;
+}
+.order-tab {
+  flex: none;
+  min-height: 36px;
+  padding: 0 14px;
+  color: #475569;
+  background: var(--neutral-100);
+  border: 0;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.order-tab.is-active {
+  color: var(--white);
+  background: var(--brand-900);
+}
+.order-bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  background: var(--neutral-100);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.order-bulk-bar .mk-button {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+.order-list {
+  display: grid;
+  gap: 10px;
+}
+.order-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: var(--white);
+  border: 1px solid var(--neutral-300);
+  border-radius: 14px;
+  color: inherit;
+  text-decoration: none;
+}
+.order-card input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  flex: none;
+}
+.order-card__body {
+  min-width: 0;
+  flex: 1;
+  color: inherit;
+  text-decoration: none;
+}
+.order-card__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.order-card__head strong {
+  font-size: 16px;
+}
+.order-card__payment {
+  padding: 2px 8px;
+  color: #475569;
+  background: var(--neutral-100);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+.order-card__customer {
+  margin: 6px 0 2px;
+  color: #475569;
+  font-size: 13px;
+}
+.order-card__items {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 13px;
+}
+.order-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+.order-card__foot strong {
+  color: var(--neutral-900);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.order-fab {
+  position: fixed;
+  right: 18px;
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  color: var(--white);
+  background: var(--brand-900);
+  border-radius: 999px;
+  box-shadow: 0 12px 26px rgb(26 58 92 / 40%);
+  z-index: 20;
+}
+.order-timeline {
+  display: flex;
+  gap: 4px;
+  margin: 18px 0;
+  padding: 0;
+  list-style: none;
+}
+.order-timeline li {
+  flex: 1;
+  padding: 8px 4px 0;
+  border-top: 3px solid var(--neutral-300);
+  color: #94a3b8;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.order-timeline li.is-done {
+  border-top-color: var(--brand-500);
+  color: var(--brand-900);
+  font-weight: 700;
+}
+.order-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 14px;
+  border-top: 1px solid #e2e8f0;
+}
+.order-item-row:first-of-type {
+  border-top: 0;
+}
+.order-item-row--total {
+  border-top: 1px solid var(--neutral-300);
+  font-size: 16px;
+}
+.order-detail-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 16px 0;
+  background: var(--neutral-50);
+}
+.customer-card {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+.customer-card__meta {
+  color: #94a3b8;
+  font-size: 13px;
+}
+.customer-order-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.settings-links {
+  display: grid;
+  gap: 4px;
+}
+.settings-links a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: var(--neutral-900);
+  font-weight: 700;
+  text-decoration: none;
+}
+.settlement-report__totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.settlement-pill {
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 750;
+}
+.settlement-pill--ok {
+  color: var(--success);
+  background: #dcfce7;
+}
+.settlement-pill--bad {
+  color: var(--danger);
+  background: #fee2e2;
+}
+.settlement-pill--warn {
+  color: var(--warning);
+  background: #fef3c7;
+}
+.settlement-line {
+  padding: 8px 0;
+  color: var(--warning);
+  font-size: 13px;
+  border-top: 1px solid #e2e8f0;
+}
+.settlement-history-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  font-size: 13px;
+  border-top: 1px solid #e2e8f0;
+}
+.settlement-history-row:first-of-type {
+  border-top: 0;
+}
+.settlement-history-row .text-button {
+  margin-left: auto;
+}
+
+/* Courier label printing */
+.label-print-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  background: var(--neutral-100);
+}
+.label-print-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: var(--white);
+  border-bottom: 1px solid var(--neutral-300);
+}
+.label-print-toolbar div {
+  display: flex;
+  gap: 8px;
+}
+.label-print-sheet {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 18px;
+  overflow-y: auto;
+}
+.label-card {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  background: var(--white);
+  border: 1px solid var(--neutral-900);
+  border-radius: 4px;
+  font-size: 12px;
+}
+.label-card__brand {
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.label-card__order {
+  font-size: 15px;
+  font-weight: 800;
+}
+.label-card__block {
+  display: grid;
+  gap: 2px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--neutral-300);
+}
+.label-card__caption {
+  color: #94a3b8;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.label-card__footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--neutral-300);
+}
+.label-card__tracking {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+@media print {
+  .label-print-toolbar,
+  .bottom-nav,
+  .top-bar,
+  .offline-banner {
+    display: none !important;
+  }
+  .label-print-overlay {
+    position: static;
+    background: var(--white);
+  }
+  .label-print-sheet {
+    display: block;
+    padding: 0;
+    overflow: visible;
+  }
+  .label-card {
+    width: 105mm;
+    height: 148mm;
+    margin: 0 auto 4mm;
+    page-break-after: always;
+  }
+}

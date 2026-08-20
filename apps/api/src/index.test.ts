@@ -230,28 +230,51 @@ describe("Mekha API", () => {
   it("passes a valid Supabase user to a protected route", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response(
-          JSON.stringify({
-            id: "60ef2a7f-ed8b-4ee2-a9c6-c005afadc80d",
-            aud: "authenticated",
-            role: "authenticated",
-            phone: "+8562012345678",
-            app_metadata: {},
-            user_metadata: {},
-            created_at: "2026-08-17T00:00:00.000Z",
-          }),
-          { status: 200, headers: { "content-type": "application/json" } },
-        ),
-      ),
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url =
+          typeof input === "string"
+            ? input
+            : input instanceof URL
+              ? input.href
+              : input.url;
+        if (url.includes("/auth/v1/user")) {
+          return new Response(
+            JSON.stringify({
+              id: "60ef2a7f-ed8b-4ee2-a9c6-c005afadc80d",
+              aud: "authenticated",
+              role: "authenticated",
+              phone: "+8562012345678",
+              app_metadata: {},
+              user_metadata: {},
+              created_at: "2026-08-17T00:00:00.000Z",
+            }),
+            { status: 200, headers: { "content-type": "application/json" } },
+          );
+        }
+        if (url.includes("/rest/v1/seller_profiles")) {
+          return new Response("null", {
+            status: 200,
+            headers: { "content-type": "application/json" },
+          });
+        }
+        return new Response("[]", {
+          status: 200,
+          headers: {
+            "content-type": "application/json",
+            "content-range": "*/0",
+          },
+        });
+      }),
     );
 
     const response = await request("/v1/orders", createEnv(), {
       authorization: "Bearer valid-token",
     });
 
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ data: [] });
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toMatchObject({
+      code: "FORBIDDEN",
+    });
   });
 
   it("rate limits the sixty-first public request", async () => {
