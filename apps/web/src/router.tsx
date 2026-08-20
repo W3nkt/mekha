@@ -1,31 +1,43 @@
+import { lazy, type ComponentType } from "react";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import App from "./App";
-import { ComingSoonPage } from "./pages/coming-soon";
-import { SellerSearchPage } from "./pages/search";
-import { LoginPage } from "./pages/login";
-import { ComponentsPage } from "./pages/dev-components";
-import { NotFoundPage } from "./pages/404";
-import { SellerProfilePage } from "./pages/seller-profile";
-import {
-  RegisterPhonePage,
-  RegisterProfilePage,
-  RegisterVerifyPage,
-} from "./pages/register";
-import { SellerVerificationPage } from "./pages/seller-verification";
-import { AdminVerificationsPage } from "./pages/admin-verifications";
-import { ReportProblemPage } from "./pages/report-problem";
-import { DashboardTrustPage } from "./pages/dashboard-trust";
-import { SellerDashboardPage } from "./pages/dashboard";
-import { ProductFormPage, ProductListPage } from "./pages/products";
-import { OrderEntryPage } from "./pages/order-entry";
-import { OrderDetailPage, OrderListPage } from "./pages/orders";
-import { CustomerDetailPage, CustomerListPage } from "./pages/customers";
-import { FinancePage } from "./pages/finance";
-import { SettingsPage } from "./pages/settings";
-import { DataExportPage } from "./pages/data-export";
-import { SafeOrderCreatePage, SafeOrderPage } from "./pages/safe-order";
-import { TrackOrderPage } from "./pages/track-order";
+
+const lazyPage = <T extends Record<string, unknown>, K extends keyof T>(
+  loader: () => Promise<T>,
+  exportName: K,
+) =>
+  lazy(async () => ({
+    default: (await loader())[exportName] as ComponentType<any>,
+  }));
+
+const ComingSoonPage = lazyPage(() => import("./pages/coming-soon"), "ComingSoonPage");
+const SellerSearchPage = lazyPage(() => import("./pages/search"), "SellerSearchPage");
+const LoginPage = lazyPage(() => import("./pages/login"), "LoginPage");
+const ComponentsPage = lazyPage(() => import("./pages/dev-components"), "ComponentsPage");
+const NotFoundPage = lazyPage(() => import("./pages/404"), "NotFoundPage");
+const SellerProfilePage = lazyPage(() => import("./pages/seller-profile"), "SellerProfilePage");
+const RegisterPhonePage = lazyPage(() => import("./pages/register"), "RegisterPhonePage");
+const RegisterProfilePage = lazyPage(() => import("./pages/register"), "RegisterProfilePage");
+const RegisterVerifyPage = lazyPage(() => import("./pages/register"), "RegisterVerifyPage");
+const SellerVerificationPage = lazyPage(() => import("./pages/seller-verification"), "SellerVerificationPage");
+const AdminVerificationsPage = lazyPage(() => import("./pages/admin-verifications"), "AdminVerificationsPage");
+const ReportProblemPage = lazyPage(() => import("./pages/report-problem"), "ReportProblemPage");
+const DashboardTrustPage = lazyPage(() => import("./pages/dashboard-trust"), "DashboardTrustPage");
+const SellerDashboardPage = lazyPage(() => import("./pages/dashboard"), "SellerDashboardPage");
+const ProductFormPage = lazyPage(() => import("./pages/products"), "ProductFormPage");
+const ProductListPage = lazyPage(() => import("./pages/products"), "ProductListPage");
+const OrderEntryPage = lazyPage(() => import("./pages/order-entry"), "OrderEntryPage");
+const OrderDetailPage = lazyPage(() => import("./pages/orders"), "OrderDetailPage");
+const OrderListPage = lazyPage(() => import("./pages/orders"), "OrderListPage");
+const CustomerDetailPage = lazyPage(() => import("./pages/customers"), "CustomerDetailPage");
+const CustomerListPage = lazyPage(() => import("./pages/customers"), "CustomerListPage");
+const FinancePage = lazyPage(() => import("./pages/finance"), "FinancePage");
+const SettingsPage = lazyPage(() => import("./pages/settings"), "SettingsPage");
+const DataExportPage = lazyPage(() => import("./pages/data-export"), "DataExportPage");
+const SafeOrderCreatePage = lazyPage(() => import("./pages/safe-order"), "SafeOrderCreatePage");
+const SafeOrderPage = lazyPage(() => import("./pages/safe-order"), "SafeOrderPage");
+const TrackOrderPage = lazyPage(() => import("./pages/track-order"), "TrackOrderPage");
 
 export const router = createBrowserRouter([
   {
