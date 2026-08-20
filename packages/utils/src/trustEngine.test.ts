@@ -384,6 +384,31 @@ describe("required UAT scenarios", () => {
     expect(result.caution_level).toBe("low");
   });
 
+  it("does not report partially_verified for a submitted-but-unreviewed verification", () => {
+    const result = computeTrustProfile(
+      input({
+        verifications: [verification({ status: "pending" })],
+      }),
+    );
+    expect(result.verification_status).toBe("unverified");
+  });
+
+  it("reports partially_verified once any verification is approved, verified once identity is", () => {
+    const partial = computeTrustProfile(
+      input({
+        verifications: [
+          verification({ verification_type: "business_registration" }),
+        ],
+      }),
+    );
+    expect(partial.verification_status).toBe("partially_verified");
+
+    const full = computeTrustProfile(
+      input({ verifications: [verification()] }),
+    );
+    expect(full.verification_status).toBe("verified");
+  });
+
   it("uses insufficient information for a new unverified seller", () => {
     const result = computeTrustProfile(
       input({

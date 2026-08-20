@@ -256,9 +256,12 @@ export function computeTrustProfile(
   );
   return {
     caution_level: computeCautionLevel(signals),
+    // A submitted-but-not-yet-reviewed verification must not itself confer
+    // "partially_verified" - that would let any seller show a trust badge
+    // to buyers the moment they upload a document, before anyone checks it.
     verification_status: hasApprovedIdentity
       ? "verified"
-      : hasAnyApproved || input.verifications.length > 0
+      : hasAnyApproved
         ? "partially_verified"
         : "unverified",
     signals,
