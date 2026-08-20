@@ -80,13 +80,19 @@ a {
   min-height: 100svh;
 }
 .top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
   height: 68px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
-  max-width: 1040px;
-  margin: 0 auto;
+  padding: 0 max(20px, calc((100vw - 1040px) / 2 + 20px));
+  background: rgba(246, 247, 244, 0.92);
+  border-bottom: 1px solid rgba(203, 213, 225, 0.72);
+  box-shadow: 0 8px 24px rgba(16, 60, 40, 0.05);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 .brand-lockup {
   display: inline-flex;
@@ -919,6 +925,9 @@ p {
   align-items: center;
   padding: 34px 0 28px;
   border-bottom: 1px solid var(--neutral-300);
+}
+.profile-identity > .profile-name:first-child {
+  grid-column: 1 / span 2;
 }
 .profile-avatar {
   width: 86px;
