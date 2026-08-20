@@ -1,12 +1,14 @@
 import { useRef, useState } from "react";
 import { ArrowRight, LockKeyhole } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 import { normalizeLaoPhone } from "@mekha/types";
 import { supabase } from "../lib/supabase";
 
 const LOGIN_PHONE_KEY = "mekha.login.phone";
 export function LoginPage() {
   const { t } = useTranslation();
+  const [searchParams] = useSearchParams();
   const [phone, setPhone] = useState("");
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
   const [step, setStep] = useState<"phone" | "otp">("phone");
@@ -39,7 +41,8 @@ export function LoginPage() {
     setBusy(false);
     if (result.error) return setError(result.error.message);
     sessionStorage.removeItem(LOGIN_PHONE_KEY);
-    window.location.assign("/dashboard");
+    const returnTo = searchParams.get("return");
+    window.location.assign(returnTo?.startsWith("/") ? returnTo : "/dashboard");
   }
 
   return (

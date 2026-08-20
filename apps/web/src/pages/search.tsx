@@ -142,7 +142,7 @@ export function SellerSearchPage() {
           <Store size={30} aria-hidden="true" />
           <h2>ບໍ່ພົບຜູ້ຂາຍນີ້</h2>
           <p>ຮ້ານຂອງທ່ານບໍ? ລົງທະບຽນເພື່ອສ້າງຄວາມໜ້າເຊື່ອຖື.</p>
-          <Link className="primary-link" to="/login?mode=register">
+          <Link className="primary-link" to="/register">
             ລົງທະບຽນຮ້ານ
           </Link>
         </div>

@@ -37,6 +37,7 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_API_URL: ${{ github.ref == 'refs/heads/main' && 'https://mekha-api.wen-kt2020.workers.dev' || 'https://mekha-api-staging.wen-kt2020.workers.dev' }}
       - name: Deploy to Cloudflare Pages
         run: pnpm --dir apps/api exec wrangler pages deploy ../web/dist --project-name mekha-web --branch "${{ github.head_ref || github.ref_name }}"
         env:

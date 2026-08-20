@@ -9,10 +9,10 @@ import { useTranslation } from "react-i18next";
 import { NavLink } from "react-router-dom";
 
 const items = [
-  { to: "/orders", label: "nav.orders", Icon: PackageCheck },
-  { to: "/products", label: "nav.products", Icon: Boxes },
+  { to: "/dashboard/orders/new", label: "nav.orders", Icon: PackageCheck },
+  { to: "/dashboard/products", label: "nav.products", Icon: Boxes },
   { to: "/finance", label: "nav.finance", Icon: BadgeDollarSign },
-  { to: "/trust", label: "nav.trust", Icon: ShieldCheck },
+  { to: "/dashboard/trust", label: "nav.trust", Icon: ShieldCheck },
   { to: "/settings", label: "nav.settings", Icon: Settings },
 ] as const;
 
