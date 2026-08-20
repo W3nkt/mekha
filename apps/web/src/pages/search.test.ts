@@ -7,6 +7,8 @@ describe("detectSellerSearchType", () => {
   });
 
   it("detects Lao local and international phone numbers", () => {
+    expect(detectSellerSearchType("29")).toBe("phone");
+    expect(detectSellerSearchType("986")).toBe("phone");
     expect(detectSellerSearchType("020 5555 1234")).toBe("phone");
     expect(detectSellerSearchType("+8562055551234")).toBe("phone");
   });

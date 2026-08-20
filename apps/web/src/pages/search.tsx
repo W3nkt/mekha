@@ -15,7 +15,7 @@ import { SellerAvatar } from "../components/SellerAvatar";
 export const detectSellerSearchType = (query: string): SellerSearch["type"] => {
   const value = query.trim();
   if (/^\d{6}$/.test(value)) return "seller_id";
-  if (/^(?:0|\+856)/.test(value)) return "phone";
+  if (/^\+?\d[\d\s-]*$/.test(value)) return "phone";
   return "shop_name";
 };
 
