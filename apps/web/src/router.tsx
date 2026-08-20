@@ -14,10 +14,13 @@ import {
 } from "./pages/register";
 import { SellerVerificationPage } from "./pages/seller-verification";
 import { AdminVerificationsPage } from "./pages/admin-verifications";
+import { ReportProblemPage } from "./pages/report-problem";
+import { DashboardTrustPage } from "./pages/dashboard-trust";
 import { SellerDashboardPage } from "./pages/dashboard";
 import { ProductFormPage, ProductListPage } from "./pages/products";
 import { OrderEntryPage } from "./pages/order-entry";
 import { DataExportPage } from "./pages/data-export";
+import { SafeOrderCreatePage, SafeOrderPage } from "./pages/safe-order";
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +30,8 @@ export const router = createBrowserRouter([
       { path: "/search", element: <SellerSearchPage /> },
       { path: "/seller/:id", element: <SellerProfilePage /> },
       { path: "/s/:id", element: <SellerProfilePage /> },
+      { path: "/order/new", element: <SafeOrderCreatePage /> },
+      { path: "/order/:safeUrl", element: <SafeOrderPage /> },
       { path: "/login", element: <LoginPage /> },
       { path: "/register", element: <RegisterPhonePage /> },
       { path: "/register/verify", element: <RegisterVerifyPage /> },
@@ -39,6 +44,8 @@ export const router = createBrowserRouter([
       { path: "/dashboard/orders/new", element: <OrderEntryPage /> },
       { path: "/dashboard/settings/export", element: <DataExportPage /> },
       { path: "/admin/verifications", element: <AdminVerificationsPage /> },
+      { path: "/report-problem", element: <ReportProblemPage /> },
+      { path: "/dashboard/trust", element: <DashboardTrustPage /> },
       {
         path: "/register/verification",
         element: <ComingSoonPage section="verification" />,
