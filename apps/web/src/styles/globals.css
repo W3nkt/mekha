@@ -2158,6 +2158,10 @@ p {
 
 .pwa-update-banner { position: fixed; inset: auto 1rem 5rem; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .75rem 1rem; border-radius: .75rem; background: #17324d; color: #fff; box-shadow: 0 8px 24px #17324d44; }
 .pwa-update-banner button { border: 0; border-radius: .5rem; padding: .4rem .7rem; background: #f6c36c; color: #17324d; font-weight: 700; }
+.pwa-install-prompt { position: fixed; inset: auto 1rem 1rem; z-index: 49; padding: 1rem; border-radius: 1rem; background: #fff; color: #17324d; box-shadow: 0 8px 28px #17324d33; border: 1px solid #dbe7ef; }
+.pwa-install-prompt p { margin: .35rem 0 .75rem; color: #557084; }
+.pwa-install-prompt button { margin-right: .5rem; border: 0; border-radius: .5rem; padding: .45rem .75rem; background: #20764a; color: #fff; }
+.pwa-install-prompt .pwa-install-dismiss { float: right; padding: 0 .35rem; background: transparent; color: #557084; font-size: 1.25rem; }
 .order-product-list {
   display: grid;
   gap: 10px;

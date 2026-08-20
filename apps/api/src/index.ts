@@ -12,6 +12,7 @@ import { ordersRoute } from "./routes/orders";
 import { productsRoute } from "./routes/products";
 import { sellersRoute } from "./routes/sellers";
 import { trustRoute } from "./routes/trust";
+import { notificationsRoute } from "./routes/notifications";
 import type { ApiEnv } from "./types";
 
 const app = new Hono<ApiEnv>();
@@ -33,6 +34,7 @@ app.route("/v1/orders", ordersRoute);
 app.route("/v1/products", productsRoute);
 app.route("/v1/customers", customersRoute);
 app.route("/v1/trust", trustRoute);
+app.route("/v1", notificationsRoute);
 app.route("/v1/admin", adminRoute);
 
 app.notFound((c) => apiError(c, 404, "NOT_FOUND", "Route not found"));
