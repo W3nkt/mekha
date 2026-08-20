@@ -746,13 +746,16 @@ const drawRect = (pixels: Uint8Array, x: number, y: number, width: number, heigh
   for (let py = Math.max(0, y); py < Math.min(630, y + height); py++) for (let px = Math.max(0, x); px < Math.min(1200, x + width); px++) pixels.set(color, (py * 1200 + px) * 4);
 };
 
-const phoneCandidates = (value: string) => {
+export const phoneSearchFragments = (value: string) => {
   const digits = value.replace(/\D/g, "");
-  const laoDigits = digits.startsWith("856") ? `0${digits.slice(3)}` : digits;
-  const internationalDigits = laoDigits.startsWith("0")
-    ? `856${laoDigits.slice(1)}`
-    : laoDigits;
-  return [...new Set([value.trim(), laoDigits, `+${internationalDigits}`])];
+  if (digits.length < 2) return [];
+  if (digits.startsWith("856")) {
+    return [...new Set([digits, `+${digits}`, `0${digits.slice(3)}`])];
+  }
+  if (digits.startsWith("0")) {
+    return [...new Set([digits, `+856${digits.slice(1)}`])];
+  }
+  return [digits];
 };
 
 sellersRoute.get("/search", async (context) => {
@@ -780,11 +783,16 @@ sellersRoute.get("/search", async (context) => {
           baseQuery().ilike("business_name", `%${literalPattern}%`),
           baseQuery().ilike("business_name_lao", `%${literalPattern}%`),
         ])
-      : [
-          type === "phone"
-            ? await baseQuery().in("phone", phoneCandidates(q))
-            : await baseQuery().eq("etrust_id", q),
-        ];
+      : type === "phone"
+        ? await Promise.all(
+            phoneSearchFragments(q).map((fragment) =>
+              baseQuery().ilike(
+                "phone",
+                `%${fragment.replace(/[\\%_]/g, "\\$&")}%`,
+              ),
+            ),
+          )
+        : [await baseQuery().eq("etrust_id", q)];
 
   const failedProfileQuery = profileResponses.find(({ error }) => error);
   if (failedProfileQuery?.error) {
