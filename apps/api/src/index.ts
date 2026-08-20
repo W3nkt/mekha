@@ -17,6 +17,7 @@ import { reviewsRoute } from "./routes/reviews";
 import { reportsRoute } from "./routes/reports";
 import { sellersRoute } from "./routes/sellers";
 import { trustRoute } from "./routes/trust";
+import { notificationsRoute } from "./routes/notifications";
 import type { ApiEnv } from "./types";
 
 const app = new Hono<ApiEnv>();
@@ -60,6 +61,7 @@ app.all("/v1/webhooks/facebook", async (context) => {
   return facebookRoute.fetch(new Request(target, context.req.raw), context.env, context.executionCtx);
 });
 app.route("/v1/trust", trustRoute);
+app.route("/v1", notificationsRoute);
 app.route("/v1/admin", adminRoute);
 
 app.notFound((c) => apiError(c, 404, "NOT_FOUND", "Route not found"));
