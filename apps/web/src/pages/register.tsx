@@ -180,9 +180,9 @@ export function RegisterProfilePage() {
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!supabase) return;
+    const data = new FormData(e.currentTarget);
     const session = (await supabase.auth.getSession()).data.session;
     if (!session) return navigate("/register");
-    const data = new FormData(e.currentTarget);
     try {
       await apiRequest("/v1/sellers", {
         method: "POST",
