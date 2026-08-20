@@ -165,7 +165,7 @@ export function ProductListPage() {
     <div className="page-enter product-list-page">
       <header className="product-list-header">
         <h1>ສິນຄ້າ ({list.length})</h1>
-        <Link className="mk-button mk-button--primary" to="/dashboard/products/new">
+        <Link className="mk-button mk-button--primary mk-button--nowrap" to="/dashboard/products/new">
           <Plus size={18} /> ເພີ່ມສິນຄ້າ
         </Link>
       </header>

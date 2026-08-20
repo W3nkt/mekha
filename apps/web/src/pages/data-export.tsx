@@ -103,7 +103,7 @@ export function DataExportPage() {
         <section className="export-section" key={section.type}>
           <h2>{section.label}</h2>
           <button
-            className="mk-button mk-button--secondary"
+            className="mk-button mk-button--secondary mk-button--nowrap"
             type="button"
             disabled={downloading === section.type}
             onClick={() => void download(section.type)}
