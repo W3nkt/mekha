@@ -21,7 +21,7 @@ export type PrintableLabel = {
 function LabelCard({ label, qr }: { label: PrintableLabel; qr: string | null }) {
   return (
     <div className="label-card">
-      <div className="label-card__brand">MEKHA / ແມ່ຄ້າ</div>
+      <div className="label-card__brand">KHAIDEE / ຂາຍດີ</div>
       <div className="label-card__order">{label.friendly_id}</div>
       <div className="label-card__block">
         <span className="label-card__caption">ຈາກ (From)</span>

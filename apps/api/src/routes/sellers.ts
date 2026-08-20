@@ -514,7 +514,7 @@ sellersRoute.get("/:id/export", requireAuth, async (context) => {
       ],
       rows,
       [
-        `# ລາຍງານທຸລະກຳ Mekha / ແມ່ຄ້າ`,
+        `# ລາຍງານທຸລະກຳ KhaiDee / ຂາຍດີ`,
         `# ຮ້ານ: ${sellerName}`,
         `# ຊ່ວງວັນທີ: ${rangeDmy}`,
         `# ສ້າງວັນທີ: ${todayDmy}`,
@@ -933,14 +933,14 @@ sellersRoute.get("/:id/badge", async (context) => {
   const badge = await badgeForSeller(sellerId, createSupabaseClient(context.env));
   if (!badge) return apiError(context, 404, "NOT_FOUND", "Seller not found");
   const base = new URL(context.req.url).origin;
-  return context.json({ data: { status: badge.status, months_active: badge.months_active, verified_order_count: badge.verified_order_count, on_time_rate: badge.on_time_rate, dispute_rate: badge.dispute_rate, badge_image_url: `${base}/v1/sellers/${sellerId}/badge.png`, widget_embed_code: `<iframe src="${base}/v1/sellers/${sellerId}/widget" width="300" height="100" frameborder="0" title="Mekha verified seller badge"></iframe>`, last_computed_at: new Date().toISOString() } });
+  return context.json({ data: { status: badge.status, months_active: badge.months_active, verified_order_count: badge.verified_order_count, on_time_rate: badge.on_time_rate, dispute_rate: badge.dispute_rate, badge_image_url: `${base}/v1/sellers/${sellerId}/badge.png`, widget_embed_code: `<iframe src="${base}/v1/sellers/${sellerId}/widget" width="300" height="100" frameborder="0" title="KhaiDee verified seller badge"></iframe>`, last_computed_at: new Date().toISOString() } });
 });
 
 sellersRoute.get("/:id/widget", async (context) => {
   const badge = await badgeForSeller(context.req.param("id"), createSupabaseClient(context.env));
   if (!badge) return apiError(context, 404, "NOT_FOUND", "Seller not found");
   const name = (badge.seller.business_name || badge.seller.business_name_lao || "Seller").replace(/[^\x20-\x7E]/g, "");
-  return context.html(`<!doctype html><html><head><meta name="viewport" content="width=device-width"><style>body{margin:0;font:14px system-ui,sans-serif;color:#17324d}main{border:1px solid #dbe7ef;border-radius:12px;padding:14px;background:#fff}strong{color:#20764a;display:block;margin-bottom:8px}small{color:#557084}</style></head><body><main><strong>✓ Mekha Verified Seller</strong><div>${name}</div><small>${badge.verified_order_count} verified orders · ${badge.months_active} months active</small></main></body></html>`);
+  return context.html(`<!doctype html><html><head><meta name="viewport" content="width=device-width"><style>body{margin:0;font:14px system-ui,sans-serif;color:#17324d}main{border:1px solid #dbe7ef;border-radius:12px;padding:14px;background:#fff}strong{color:#20764a;display:block;margin-bottom:8px}small{color:#557084}</style></head><body><main><strong>✓ KhaiDee Verified Seller</strong><div>${name}</div><small>${badge.verified_order_count} verified orders · ${badge.months_active} months active</small></main></body></html>`);
 });
 
 sellersRoute.get("/:id/badge.png", async (context) => {
@@ -949,7 +949,7 @@ sellersRoute.get("/:id/badge.png", async (context) => {
   if (!badge) return apiError(context, 404, "NOT_FOUND", "Seller not found");
   const pixels = new Uint8Array(1200 * 630 * 4);
   drawRect(pixels, 0, 0, 1200, 630, [32, 112, 72, 255]);
-  drawText(pixels, "✓ MEKHA VERIFIED", 72, 95, 7, [255, 255, 255, 255]);
+  drawText(pixels, "✓ KHAIDEE VERIFIED", 72, 95, 7, [255, 255, 255, 255]);
   drawText(pixels, (badge.seller.business_name || badge.seller.business_name_lao || "Seller").replace(/[^\x20-\x7E]/g, "").slice(0, 28), 72, 245, 10, [255, 255, 255, 255]);
   drawText(pixels, `${badge.verified_order_count} VERIFIED ORDERS`, 72, 390, 6, [224, 246, 231, 255]);
   drawText(pixels, `${badge.months_active} MONTHS ACTIVE`, 72, 500, 5, [224, 246, 231, 255]);
